@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Find your school",
+        "description": "Enter part of the school name, the city or the school number.",
+        "data": { "query": "School name, city or number" }
+      },
+      "school": {
+        "title": "Choose your school",
+        "data": { "school": "School" }
+      },
+      "credentials": {
+        "title": "Sign in to {school}",
+        "description": "Use the same user name and password as on Schulportal Hessen. The integration only reads data.",
+        "data": { "username": "User name (firstname.lastname)", "password": "Password" }
+      },
+      "reauth_confirm": {
+        "title": "Sign in again",
+        "description": "The login for {school} was rejected. Enter the current password.",
+        "data": { "password": "Password" }
+      }
+    },
+    "error": {
+      "cannot_connect": "Schulportal Hessen could not be reached.",
+      "invalid_auth": "Login failed. Check school, user name and password.",
+      "no_schools_found": "No school found for this search.",
+      "too_many_results": "Too many results. Please be more specific.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This account is already configured.",
+      "reauth_successful": "Re-authentication was successful."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "next_lesson": { "name": "Next lesson" },
+      "substitutions": { "name": "Substitutions" },
+      "homework": { "name": "Homework" }
+    },
+    "calendar": {
+      "school_calendar": { "name": "School calendar" },
+      "timetable": { "name": "Timetable" }
+    }
+  }
+}

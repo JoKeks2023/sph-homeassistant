@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Schule suchen",
+        "description": "Gib einen Teil des Schulnamens, den Ort oder die Schulnummer ein.",
+        "data": { "query": "Schulname, Ort oder Nummer" }
+      },
+      "school": {
+        "title": "Schule auswählen",
+        "data": { "school": "Schule" }
+      },
+      "credentials": {
+        "title": "Anmelden bei {school}",
+        "description": "Verwende denselben Benutzernamen und dasselbe Passwort wie im Schulportal Hessen. Die Integration liest nur Daten.",
+        "data": { "username": "Benutzername (vorname.nachname)", "password": "Passwort" }
+      },
+      "reauth_confirm": {
+        "title": "Erneut anmelden",
+        "description": "Die Anmeldung bei {school} wurde abgelehnt. Gib das aktuelle Passwort ein.",
+        "data": { "password": "Passwort" }
+      }
+    },
+    "error": {
+      "cannot_connect": "Das Schulportal Hessen ist nicht erreichbar.",
+      "invalid_auth": "Anmeldung fehlgeschlagen. Prüfe Schule, Benutzername und Passwort.",
+      "no_schools_found": "Keine Schule zu dieser Suche gefunden.",
+      "too_many_results": "Zu viele Treffer. Bitte genauer suchen.",
+      "unknown": "Unerwarteter Fehler."
+    },
+    "abort": {
+      "already_configured": "Dieses Konto ist bereits eingerichtet.",
+      "reauth_successful": "Die erneute Anmeldung war erfolgreich."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "next_lesson": { "name": "Nächste Stunde" },
+      "substitutions": { "name": "Vertretungen" },
+      "homework": { "name": "Hausaufgaben" }
+    },
+    "calendar": {
+      "school_calendar": { "name": "Schulkalender" },
+      "timetable": { "name": "Stundenplan" }
+    }
+  }
+}
