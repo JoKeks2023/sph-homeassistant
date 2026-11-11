@@ -63,6 +63,13 @@ class SphData:
             s for s in self.substitutions if any(c.casefold() == mine for c in s.classes)
         ]
 
+    def other_substitutions(self) -> list[Substitution]:
+        """Substitutions of all other classes (empty if own class is unknown)."""
+        if not self.own_class:
+            return []
+        mine = {id(s) for s in self.my_substitutions()}
+        return [s for s in self.substitutions if id(s) not in mine]
+
 
 class SphCoordinator(DataUpdateCoordinator[SphData]):
     """Fetch data with a separate time-to-live per category."""

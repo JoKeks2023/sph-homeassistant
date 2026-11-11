@@ -16,6 +16,7 @@ from . import SphConfigEntry
 from .const import APPLET_CALENDAR, APPLET_TIMETABLE
 from .coordinator import SphCoordinator
 from .entity import SphEntity
+from .subjects import full_subject
 from .timetable import lessons_between, next_lesson
 
 
@@ -115,7 +116,7 @@ class SphTimetableCalendar(SphEntity, CalendarEntity):
         return CalendarEvent(
             start=start,
             end=end,
-            summary=lesson.subject,
+            summary=full_subject(lesson.subject),
             description=details or None,
             location=lesson.room or None,
         )

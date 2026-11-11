@@ -21,6 +21,7 @@ from .const import (
 )
 from .coordinator import SphData
 from .entity import SphEntity
+from .subjects import full_subject
 from .timetable import next_lesson
 
 SCAN_INTERVAL = timedelta(minutes=1)
@@ -41,7 +42,7 @@ def _next_lesson(data: SphData):
 
 def _next_lesson_value(data: SphData) -> str | None:
     found = _next_lesson(data)
-    return found[0].subject if found else None
+    return full_subject(found[0].subject) if found else None
 
 
 def _next_lesson_attrs(data: SphData) -> dict[str, Any]:
@@ -50,6 +51,7 @@ def _next_lesson_attrs(data: SphData) -> dict[str, Any]:
         return {}
     lesson, start, end = found
     return {
+        "subject_short": lesson.subject,
         "start": start.isoformat(),
         "end": end.isoformat(),
         "teacher": lesson.teacher,
@@ -73,6 +75,17 @@ SENSORS: tuple[SphSensorDescription, ...] = (
         attrs_fn=lambda data: {
             "class": data.own_class,
             "entries": [s.as_dict() for s in data.my_substitutions()][:MAX_ATTRIBUTE_ITEMS],
+        },
+        native_unit_of_measurement="entries",
+    ),
+    SphSensorDescription(
+        key="other_substitutions",
+        applet=APPLET_SUBSTITUTIONS,
+        value_fn=lambda data: len(data.other_substitutions()),
+        attrs_fn=lambda data: {
+            "entries": [s.as_dict() for s in data.other_substitutions()][
+                :MAX_ATTRIBUTE_ITEMS
+            ],
         },
         native_unit_of_measurement="entries",
     ),
