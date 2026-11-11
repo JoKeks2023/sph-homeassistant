@@ -1,0 +1,16 @@
+{
+  "domain": "schulportal_hessen",
+  "name": "Schulportal Hessen",
+  "codeowners": ["@JoKeks2023"],
+  "config_flow": true,
+  "documentation": "https://github.com/JoKeks2023/sph-homeassistant",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/JoKeks2023/sph-homeassistant/issues",
+  "requirements": [
+    "beautifulsoup4>=4.12",
+    "icalendar>=6.0",
+    "recurring-ical-events>=3.3"
+  ],
+  "version": "0.1.0"
+}
