@@ -1,12 +1,15 @@
 <div align="center">
 
-# 🎒 Schulportal Hessen für Home Assistant
+<img src="docs/logo.png" width="96" alt="Logo">
+
+# Schulportal Hessen für Home Assistant
 
 **Stundenplan, Vertretungen, Hausaufgaben und Schulkalender – direkt in deinem Smart Home.**
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
 [![Validate](https://github.com/JoKeks2023/sph-homeassistant/actions/workflows/validate.yml/badge.svg)](https://github.com/JoKeks2023/sph-homeassistant/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/JoKeks2023/sph-homeassistant?include_prereleases)](https://github.com/JoKeks2023/sph-homeassistant/releases)
 ![Status](https://img.shields.io/badge/status-early%20(v0.1)-yellow)
 ![Read-only](https://img.shields.io/badge/access-read--only-green)
 
@@ -114,7 +117,9 @@ automatisch danach (Reauthentifizierung).
 ## 🧪 Status
 
 Frühe Version (0.1). Client und Parser wurden gegen das echte Portal geprüft; die
-Integration selbst ist noch nicht in vielen Home-Assistant-Setups getestet.
+Integration läuft in einem Home-Assistant-Setup (Einrichtung, Sensoren, Karte). Der
+Fehlerpfad „falsches Passwort“ ist nicht getestet, und mit nur einem Account ist die
+Abdeckung unterschiedlicher Schulen gering.
 Fehler bitte als [Issue](https://github.com/JoKeks2023/sph-homeassistant/issues)
 melden – **ohne Zugangsdaten und ohne persönliche Daten**.
 

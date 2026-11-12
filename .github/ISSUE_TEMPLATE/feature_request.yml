@@ -1,0 +1,13 @@
+name: Wunsch / Feature request
+description: Idee oder fehlende Funktion
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes: {label: Beschreibung}
+    validations: {required: true}
+  - type: dropdown
+    id: area
+    attributes:
+      label: Bereich
+      options: [Stundenplan, Vertretungsplan, Hausaufgaben, Kalender, Nachrichten, Klausuren, Karte, Sonstiges]
