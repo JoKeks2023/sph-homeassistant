@@ -1,0 +1,22 @@
+name: Fehler melden / Bug report
+description: Etwas funktioniert nicht
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Bitte **keine** Zugangsdaten, Cookies oder persönlichen Portal-Inhalte posten."
+  - type: input
+    id: ha
+    attributes: {label: Home-Assistant-Version}
+    validations: {required: true}
+  - type: input
+    id: version
+    attributes: {label: Version der Integration}
+    validations: {required: true}
+  - type: textarea
+    id: what
+    attributes: {label: Was passiert / was erwartest du?}
+    validations: {required: true}
+  - type: textarea
+    id: log
+    attributes: {label: Log-Auszug (ohne Zugangsdaten), render: text}
