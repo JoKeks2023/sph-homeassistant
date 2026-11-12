@@ -1,8 +1,14 @@
 {
   "domain": "schulportal_hessen",
   "name": "Schulportal Hessen",
-  "codeowners": ["@JoKeks2023"],
+  "codeowners": [
+    "@JoKeks2023"
+  ],
   "config_flow": true,
+  "dependencies": [
+    "http",
+    "frontend"
+  ],
   "documentation": "https://github.com/JoKeks2023/sph-homeassistant",
   "integration_type": "service",
   "iot_class": "cloud_polling",

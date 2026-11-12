@@ -137,5 +137,11 @@ class SphSensor(SphEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Return attributes (no credentials or tokens)."""
-        return self.entity_description.attrs_fn(self.coordinator.data)
+        """Return attributes (no credentials or tokens).
+
+        ``sph`` identifies the sensor kind so the Lovelace card can find it.
+        """
+        return {
+            "sph": self.entity_description.key,
+            **self.entity_description.attrs_fn(self.coordinator.data),
+        }

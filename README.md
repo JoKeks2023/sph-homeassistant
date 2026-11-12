@@ -36,7 +36,7 @@ Server, Container oder Cloud-Dienst. Alles läuft direkt in Home Assistant.
 Es werden nur Entitäten für Module angelegt, die in deinem Portal-Account
 **freigeschaltet** sind.
 
-Dashboard-Beispiele (Markdown-Karten, keine Custom Card nötig): [docs/dashboard.md](docs/dashboard.md)
+Dashboard: mitgelieferte Karte `custom:schulportal-hessen-card` plus Markdown-Alternativen – siehe [docs/dashboard.md](docs/dashboard.md)
 
 ### 🔔 Ereignisse für Automationen
 
