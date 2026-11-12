@@ -1,4 +1,33 @@
-# Dashboard-Beispiele (ohne Custom Card)
+# Dashboard
+
+## Custom Card (empfohlen)
+
+Die Karte wird von der Integration selbst mitgeliefert und automatisch geladen
+(nach dem Update Home Assistant neu starten und den Browser-Cache leeren/Seite neu laden).
+Sie findet die Sensoren automatisch.
+
+```yaml
+type: custom:schulportal-hessen-card
+title: Schule            # optional
+show_next: true          # nächste Stunde
+show_other: true         # Vertretungen anderer Klassen
+show_homework: true
+```
+
+Optional lassen sich Entitäten fest zuordnen:
+
+```yaml
+type: custom:schulportal-hessen-card
+entities:
+  next_lesson: sensor.deine_schule_naechste_stunde
+  substitutions: sensor.deine_schule_vertretungen
+  other_substitutions: sensor.deine_schule_vertretungen_andere_klassen
+  homework: sensor.deine_schule_hausaufgaben
+```
+
+Einträge ohne Art und ohne Vertreter werden als **Entfall** markiert.
+
+## Alternative: Markdown-Karten (ohne Custom Card)
 
 Die Beispiele nutzen die eingebaute **Markdown-Karte**. Ersetze die Entity-IDs
 durch deine eigenen (*Einstellungen → Geräte & Dienste → Schulportal Hessen → Entitäten*);
