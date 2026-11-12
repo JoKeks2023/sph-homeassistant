@@ -4,21 +4,30 @@
       "user": {
         "title": "Schule suchen",
         "description": "Gib einen Teil des Schulnamens, den Ort oder die Schulnummer ein.",
-        "data": { "query": "Schulname, Ort oder Nummer" }
+        "data": {
+          "query": "Schulname, Ort oder Nummer"
+        }
       },
       "school": {
         "title": "Schule auswählen",
-        "data": { "school": "Schule" }
+        "data": {
+          "school": "Schule"
+        }
       },
       "credentials": {
         "title": "Anmelden bei {school}",
         "description": "Verwende denselben Benutzernamen und dasselbe Passwort wie im Schulportal Hessen. Die Integration liest nur Daten.",
-        "data": { "username": "Benutzername (vorname.nachname)", "password": "Passwort" }
+        "data": {
+          "username": "Benutzername (vorname.nachname)",
+          "password": "Passwort"
+        }
       },
       "reauth_confirm": {
         "title": "Erneut anmelden",
         "description": "Die Anmeldung bei {school} wurde abgelehnt. Gib das aktuelle Passwort ein.",
-        "data": { "password": "Passwort" }
+        "data": {
+          "password": "Passwort"
+        }
       }
     },
     "error": {
@@ -35,13 +44,26 @@
   },
   "entity": {
     "sensor": {
-      "next_lesson": { "name": "Nächste Stunde" },
-      "substitutions": { "name": "Vertretungen" },
-      "homework": { "name": "Hausaufgaben" }
+      "next_lesson": {
+        "name": "Nächste Stunde"
+      },
+      "substitutions": {
+        "name": "Vertretungen"
+      },
+      "homework": {
+        "name": "Hausaufgaben"
+      },
+      "other_substitutions": {
+        "name": "Vertretungen andere Klassen"
+      }
     },
     "calendar": {
-      "school_calendar": { "name": "Schulkalender" },
-      "timetable": { "name": "Stundenplan" }
+      "school_calendar": {
+        "name": "Schulkalender"
+      },
+      "timetable": {
+        "name": "Stundenplan"
+      }
     }
   }
 }

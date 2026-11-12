@@ -76,3 +76,10 @@ def test_next_lesson_and_expansion():
     assert next_lesson(lessons, after, TZ)[0].subject == "D"
     week = list(lessons_between(lessons, monday, monday + timedelta(days=5), TZ))
     assert len(week) == len(lessons)
+
+
+def test_full_subject():
+    subjects = importlib.import_module("sph.subjects")
+    assert subjects.full_subject("M") == "Mathematik"
+    assert subjects.full_subject("AG_Astronomie") == "AG Astronomie"
+    assert subjects.full_subject("XYZ") == "XYZ"

@@ -29,12 +29,14 @@ Server, Container oder Cloud-Dienst. Alles läuft direkt in Home Assistant.
 | | Bereich | Entität | Details |
 |---|---|---|---|
 | 🗓️ | **Stundenplan** | Kalender „Stundenplan“ · Sensor „Nächste Stunde“ | Regulärer Wochenplan. Vertretungen sind darin **nicht** eingerechnet. |
-| 🔄 | **Vertretungsplan** | Sensor „Vertretungen“ | Anzahl + Liste (Attribute) für deine Klasse, automatisch erkannt. |
+| 🔄 | **Vertretungsplan** | Sensoren „Vertretungen“ (deine Klasse) und „Vertretungen andere Klassen“ | Anzahl + Liste (Attribute), Klasse automatisch erkannt. |
 | 📚 | **Hausaufgaben** | Sensor „Hausaufgaben“ | Aktuelle Hausaufgabe je Kurs. |
 | 🏫 | **Schulkalender** | Kalender „Schulkalender“ | Aus dem iCal-Export des Portals. |
 
 Es werden nur Entitäten für Module angelegt, die in deinem Portal-Account
 **freigeschaltet** sind.
+
+Dashboard-Beispiele (Markdown-Karten, keine Custom Card nötig): [docs/dashboard.md](docs/dashboard.md)
 
 ### 🔔 Ereignisse für Automationen
 
