@@ -103,3 +103,33 @@ def test_diagnostics_redacts_and_has_no_content():
     assert "10A" not in text
     assert out["entry"]["password"] == redaction.REDACTED
     assert out["own_class_known"] is True
+cancellations = importlib.import_module("sph.cancellations")
+
+
+def test_parse_periods():
+    pp = cancellations.parse_periods
+    assert pp("5") == {5}
+    assert pp("3 - 4") == {3, 4}
+    assert pp("1-2, 6") == {1, 2, 6}
+    assert pp("") == frozenset()
+    assert pp("x") == frozenset()
+
+
+def test_cancellations_from_fixture():
+    items = parse_substitutions(read("vertretungsplan.html"))
+    rows = cancellations.cancellations_on(items, date(2026, 11, 10))
+    assert [r.lesson for r in rows] == ["5"]  # "Vertretung" 3-4 is not an Entfall
+    assert cancellations.cancelled_periods(rows) == {5}
+    assert not cancellations.first_hours_cancelled(rows, 2)
+    assert cancellations.first_hours_cancelled(rows, 5)
+    assert cancellations.cancellations_on(items, date(2026, 11, 11)) == []
+
+
+def test_first_hours_with_range():
+    sub = parsers.Substitution(
+        day=date(2026, 11, 12), lesson="2 - 3", classes=("10A",), substitute="",
+        teacher="ABC", kind="Entfall", subject="", subject_old="M", room="", note="",
+    )
+    assert cancellations.is_cancellation(sub)
+    assert cancellations.first_hours_cancelled([sub], 2)
+    assert not cancellations.first_hours_cancelled([sub], 1)

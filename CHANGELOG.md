@@ -4,6 +4,9 @@
 
 * Diagnostics mit Schwärzung (nur Struktur und Anzahlen, keine Zugangsdaten, Namen oder
   Inhalte); Fehlerlog bei Login-Check ohne Traceback (SPHA-26).
+* Neue Binary-Sensoren „Entfall heute“, „Entfall in den ersten Stunden“ (N einstellbar,
+  Standard 2) und „Entfall morgen“ (SPHA-35).
+* Neuer Options-Dialog (Anzahl der ersten Stunden).
 
 ## 0.1.0 – 2026-11-12
 
