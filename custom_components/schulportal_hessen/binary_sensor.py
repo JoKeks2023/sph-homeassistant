@@ -68,6 +68,11 @@ class SphCancellationSensor(SphEntity, BinarySensorEntity):
         """Re-evaluate from cached data; never hits the portal."""
 
     @property
+    def available(self) -> bool:
+        """Unavailable until substitutions were loaded once (not "no cancellation")."""
+        return super().available and self.coordinator.data.has_fetched("substitutions")
+
+    @property
     def _first_hours(self) -> int:
         return int(
             self.coordinator.config_entry.options.get(
@@ -95,6 +100,7 @@ class SphCancellationSensor(SphEntity, BinarySensorEntity):
         """Return the cancelled lessons of the day."""
         attrs: dict[str, Any] = {
             "date": self._day().isoformat(),
+            "stale": self.coordinator.data.stale,
             "entries": [
                 {**s.as_dict(), "subject_full": full_subject(s.subject_old or s.subject)}
                 for s in self._rows()

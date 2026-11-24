@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Entfall-Sensoren sind „nicht verfügbar“, solange der Vertretungsplan nie geladen
+  wurde, und tragen das Attribut `stale` (Folgearbeit zu SPHA-19/SPHA-35).
 * Mindestversion Home Assistant 2024.11 (`hacs.json`, README) (SPHA-39).
 * Robustheit (SPHA-19): Bei Portalausfall werden die letzten Daten weiter angezeigt
   (Attribut `stale`), statt alle Entitäten auf „nicht verfügbar“ zu setzen. Sensoren sind
