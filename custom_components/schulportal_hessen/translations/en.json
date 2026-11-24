@@ -55,6 +55,9 @@
       },
       "other_substitutions": {
         "name": "Substitutions other classes"
+      },
+      "school_start": {
+        "name": "School start"
       }
     },
     "calendar": {

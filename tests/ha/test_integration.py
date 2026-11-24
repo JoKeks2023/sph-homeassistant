@@ -223,3 +223,27 @@ async def test_new_cancellation_event(
 
     assert [e.data["lesson"] for e in cancellations] == ["2"]
     assert sorted(e.data["lesson"] for e in substitutions) == ["2", "4"]
+
+
+async def test_next_lesson_skips_cancelled_and_school_start(
+    hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal, freezer
+) -> None:
+    from datetime import UTC, date, datetime, time
+
+    from custom_components.schulportal_hessen.parsers import Lesson
+
+    # Monday 07:00 local time (hass default zone is US/Pacific)
+    freezer.move_to(datetime(2026, 11, 9, 15, 0, tzinfo=UTC))
+    portal.lessons = [
+        Lesson(0, "1", time(8, 0), time(8, 45), "M", "ABC", "R1", ""),
+        Lesson(0, "2", time(8, 50), time(9, 35), "D", "DEF", "R2", ""),
+    ]
+    portal.substitutions = [make_sub(date(2026, 11, 9), "1")]  # subject_old "M"
+    await setup(hass, entry)
+
+    next_lesson = hass.states.get(eid(hass, entry, "sensor", "next_lesson"))
+    assert next_lesson.state == "Deutsch"
+    assert [s["subject"] for s in next_lesson.attributes["skipped_cancelled"]] == ["Mathematik"]
+
+    start = hass.states.get(eid(hass, entry, "sensor", "school_start"))
+    assert start.state == "2026-11-09T16:50:00+00:00"  # 08:50 local
