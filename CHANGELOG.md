@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 – 2026-11-24
+
+Neu: Entfall-Sensoren, Vertretungen im Stundenplan, Robustheit bei Portalausfall.
+Voraussetzung jetzt **Home Assistant 2024.11**. Keine Änderungen an bestehenden Entitäten
+und Event-Namen; bestehende Einträge bleiben unverändert.
 
 * Doku: Hinweis, dass das Hausaufgaben-Datum das Stundendatum und kein Abgabetermin ist.
   Eine Fälligkeits-Erkennung im Text wurde bewusst nicht eingebaut (keine echten Daten als
