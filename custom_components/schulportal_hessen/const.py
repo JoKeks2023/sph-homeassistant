@@ -38,3 +38,9 @@ CANCELLATION_KINDS = frozenset(
 
 CONF_FIRST_HOURS = "first_hours"
 DEFAULT_FIRST_HOURS = 2
+
+# Repair: the timetable is practically never legitimately empty, so an empty
+# result on this many consecutive fetches suggests the portal markup changed.
+# (Substitutions/homework are often legitimately empty and are not checked.)
+EMPTY_TIMETABLE_THRESHOLD = 2
+ISSUE_TRACKER_URL = "https://github.com/JoKeks2023/sph-homeassistant/issues"

@@ -92,5 +92,11 @@
         }
       }
     }
+  },
+  "issues": {
+    "timetable_structure": {
+      "title": "Timetable no longer recognised",
+      "description": "The portal returns the timetable but the integration finds no lessons in it. The portal may have changed, or your timetable really is empty. If you expect lessons, please report it as a GitHub issue (without passwords or personal data)."
+    }
   }
 }

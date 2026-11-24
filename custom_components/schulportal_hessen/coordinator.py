@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
@@ -22,9 +23,11 @@ from .const import (
     APPLET_SUBSTITUTIONS,
     APPLET_TIMETABLE,
     DOMAIN,
+    EMPTY_TIMETABLE_THRESHOLD,
     EVENT_NEW_CANCELLATION,
     EVENT_NEW_HOMEWORK,
     EVENT_NEW_SUBSTITUTION,
+    ISSUE_TRACKER_URL,
     TTL_APPLETS,
     TTL_CALENDAR,
     TTL_HOMEWORK,
@@ -108,6 +111,7 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
         self.client = client
         self._data = SphData()
         self._first = True
+        self._empty_timetables = 0
         self._store: Store[dict] = Store(hass, 1, store_key(entry.entry_id))
 
     async def _async_setup(self) -> None:
@@ -131,6 +135,27 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
         data.lessons = restored["lessons"]
         data.homework = restored["homework"]
         data.fetched = restored["fetched"]
+
+    def _timetable_issue_id(self) -> str:
+        return f"timetable_structure_{self.config_entry.entry_id}"
+
+    def _check_timetable_structure(self, has_lessons: bool) -> None:
+        """Raise/clear a repair issue when the timetable keeps coming back empty."""
+        if has_lessons:
+            self._empty_timetables = 0
+            ir.async_delete_issue(self.hass, DOMAIN, self._timetable_issue_id())
+            return
+        self._empty_timetables += 1
+        if self._empty_timetables >= EMPTY_TIMETABLE_THRESHOLD:
+            ir.async_create_issue(
+                self.hass,
+                DOMAIN,
+                self._timetable_issue_id(),
+                is_fixable=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key="timetable_structure",
+                learn_more_url=ISSUE_TRACKER_URL,
+            )
 
     def _save(self) -> None:
         data = self._data
@@ -183,6 +208,7 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
 
         async def timetable() -> None:
             data.own_class, data.lessons = await self.client.get_timetable()
+            self._check_timetable_structure(bool(data.lessons))
 
         async def homework() -> None:
             data.homework = await self.client.get_homework()
