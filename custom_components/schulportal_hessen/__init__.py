@@ -26,7 +26,7 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 CARD_URL = "/schulportal_hessen/schulportal-hessen-card.js"
 CARD_PATH = Path(__file__).parent / "www" / "schulportal-hessen-card.js"
-CARD_VERSION = "0.1.0"
+CARD_VERSION = "0.2.0"
 
 type SphConfigEntry = ConfigEntry[SphCoordinator]
 

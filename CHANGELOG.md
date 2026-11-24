@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Mehrere Konten: neue Einträge heißen „Schule (Benutzername)“ und tragen das im Gerät;
+  Sensoren haben das Attribut `account`; die Karte hat die Option `entity` zur Auswahl
+  des Kontos (SPHA-45). Bestehende Einträge bleiben unverändert.
 * Repair-Hinweis, wenn der Stundenplan bei zwei Abrufen in Folge keine Stunden liefert
   (mögliche Portal-Änderung). Für Vertretungen/Hausaufgaben nicht aktiv, da dort „leer“
   normal ist (SPHA-44).

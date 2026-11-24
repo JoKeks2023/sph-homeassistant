@@ -316,3 +316,39 @@ async def test_repair_issue_for_empty_timetable(
     portal.lessons = [Lesson(0, "1", time(8, 0), time(8, 45), "M", "ABC", "R1", "")]
     await refresh()
     assert registry.async_get_issue(DOMAIN, issue_id) is None
+
+
+async def test_two_accounts_are_distinguishable(
+    hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal
+) -> None:
+    second = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="1234_anna.muster",
+        data={**entry.data, "username": "anna.muster"},
+    )
+    await setup(hass, entry)
+    await setup(hass, second)
+    assert second.state is ConfigEntryState.LOADED
+
+    one = hass.states.get(eid(hass, entry, "sensor", "substitutions"))
+    two = hass.states.get(eid(hass, second, "sensor", "substitutions"))
+    assert one.entity_id != two.entity_id
+    assert one.attributes["account"] == entry.entry_id
+    assert two.attributes["account"] == second.entry_id
+    assert one.attributes["account"] != two.attributes["account"]
+
+
+async def test_new_entry_title_contains_username(hass: HomeAssistant) -> None:
+    schools = [{"id": "1234", "name": "Testschule", "city": "Teststadt"}]
+    with (
+        patch("custom_components.schulportal_hessen.config_flow.search_schools", AsyncMock(return_value=schools)),
+        patch("custom_components.schulportal_hessen.config_flow.SphClient", return_value=AsyncMock()),
+        patch("custom_components.schulportal_hessen.async_setup_entry", AsyncMock(return_value=True)),
+    ):
+        result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {"query": "Test"})
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {"school": "1234"})
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {"username": "anna.muster", "password": "x"}
+        )
+    assert result["title"] == "Testschule, Teststadt (anna.muster)"

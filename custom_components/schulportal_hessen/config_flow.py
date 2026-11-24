@@ -153,7 +153,7 @@ class SphConfigFlow(ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(f"{self._school_id}_{username.casefold()}")
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
-                    title=self._school_name,
+                    title=f"{self._school_name} ({username})",
                     data={
                         CONF_SCHOOL_ID: self._school_id,
                         CONF_SCHOOL_NAME: self._school_name,

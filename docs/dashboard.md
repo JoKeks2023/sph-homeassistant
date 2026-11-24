@@ -78,3 +78,19 @@ content: >
 ```
 
 Hinweis: `lesson_date` ist das Datum der Stunde, kein Abgabetermin.
+
+
+## Mehrere Kinder / Konten
+
+Jedes Konto ist ein eigener Eintrag der Integration (Einstellungen → Geräte & Dienste →
+Schulportal Hessen → Eintrag hinzufügen). Neue Einträge heißen „Schule (Benutzername)“.
+
+Bei mehr als einem Konto nimmt die Karte ohne Angabe den **ersten** gefundenen Sensor.
+Gib mit `entity` einen beliebigen Sensor des gewünschten Kontos an, die Karte holt sich
+alle weiteren Sensoren desselben Kontos:
+
+```yaml
+type: custom:schulportal-hessen-card
+title: Anna
+entity: sensor.gymnasium_musterstadt_anna_muster_naechste_stunde
+```
