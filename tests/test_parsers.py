@@ -83,3 +83,23 @@ def test_full_subject():
     assert subjects.full_subject("M") == "Mathematik"
     assert subjects.full_subject("AG_Astronomie") == "AG Astronomie"
     assert subjects.full_subject("XYZ") == "XYZ"
+
+
+redaction = importlib.import_module("sph.redaction")
+
+
+def test_diagnostics_redacts_and_has_no_content():
+    out = redaction.summarize(
+        entry_data={"username": "max.muster", "password": "geheim", "school_id": "1234"},
+        options={"first_hours": 2},
+        applets=["Vertretungsplan"],
+        own_class="10A",
+        counts={"substitutions": 3},
+        fetched={"substitutions": "2026-11-10T08:00:00+00:00"},
+        last_update_success=True,
+    )
+    text = repr(out)
+    assert "max.muster" not in text and "geheim" not in text and "1234" not in text
+    assert "10A" not in text
+    assert out["entry"]["password"] == redaction.REDACTED
+    assert out["own_class_known"] is True

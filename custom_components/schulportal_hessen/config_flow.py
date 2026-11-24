@@ -53,8 +53,9 @@ class SphConfigFlow(ConfigFlow, domain=DOMAIN):
             return "invalid_auth"
         except SphError:
             return "cannot_connect"
-        except Exception:  # noqa: BLE001
-            _LOGGER.exception("Unexpected error during login check")
+        except Exception as err:  # noqa: BLE001
+            # Type only: tracebacks/messages may contain URLs or request details.
+            _LOGGER.error("Unexpected error during login check: %s", type(err).__name__)
             return "unknown"
         else:
             await client.logout()

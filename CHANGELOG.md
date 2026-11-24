@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* Diagnostics mit Schwärzung (nur Struktur und Anzahlen, keine Zugangsdaten, Namen oder
+  Inhalte); Fehlerlog bei Login-Check ohne Traceback (SPHA-26).
+
 ## 0.1.0 – 2026-11-12
 
 * Erste Version: Config Flow mit Schulsuche, Stundenplan (Kalender + Sensor),
