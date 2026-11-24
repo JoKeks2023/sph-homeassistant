@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator
 from datetime import date, datetime, timedelta, tzinfo
 
-from .cancellations import cancellations_on, parse_periods
+from .cancellations import is_cancellation, parse_periods
 from .parsers import Lesson, Substitution
 
 
@@ -42,27 +42,41 @@ def next_lesson(
     return min(found, key=lambda item: item[1]) if found else None
 
 
+def matching_substitution(
+    lesson: Lesson, day: date, rows: Iterable[Substitution]
+) -> Substitution | None:
+    """Return the substitution row that concerns this lesson on ``day``, if any.
+
+    The substitution plan is per class while the timetable is personal, so a
+    row only counts if its period matches the lesson's first period AND, when
+    the row names a subject (old or new), that subject equals the lesson's.
+    Anything uncertain counts as "no match" so a real lesson is never altered.
+    Only the first period of double lessons is checked. A cancellation wins
+    over other kinds if several rows match.
+    """
+    if not lesson.period.isdigit():
+        return None
+    number = int(lesson.period)
+    own = lesson.subject.strip().casefold()
+    matches: list[Substitution] = []
+    for row in rows:
+        if row.day != day or number not in parse_periods(row.lesson):
+            continue
+        named = {x.strip().casefold() for x in (row.subject_old, row.subject) if x.strip()}
+        if named and own not in named:
+            continue
+        matches.append(row)
+    if not matches:
+        return None
+    return next((m for m in matches if is_cancellation(m)), matches[0])
+
+
 def is_lesson_cancelled(
     lesson: Lesson, day: date, cancellations: Iterable[Substitution]
 ) -> bool:
-    """True if a cancellation row covers this lesson on ``day``.
-
-    The substitution plan is per class while the timetable is personal, so a
-    row only counts if its period matches the lesson's first period AND the
-    cancelled subject equals the lesson's subject (when the row names one).
-    Anything uncertain counts as "not cancelled" so a real lesson is never
-    hidden. Only the first period of double lessons is checked.
-    """
-    if not lesson.period.isdigit():
-        return False
-    number = int(lesson.period)
-    for row in cancellations_on(cancellations, day):
-        if number not in parse_periods(row.lesson):
-            continue
-        if row.subject_old and row.subject_old.strip().casefold() != lesson.subject.strip().casefold():
-            continue
-        return True
-    return False
+    """True if a cancellation row covers this lesson on ``day``."""
+    row = matching_substitution(lesson, day, cancellations)
+    return row is not None and is_cancellation(row)
 
 
 def upcoming_lessons(

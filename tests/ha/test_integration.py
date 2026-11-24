@@ -247,3 +247,43 @@ async def test_next_lesson_skips_cancelled_and_school_start(
 
     start = hass.states.get(eid(hass, entry, "sensor", "school_start"))
     assert start.state == "2026-11-09T16:50:00+00:00"  # 08:50 local
+
+
+async def test_timetable_calendar_merges_substitutions(
+    hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal, freezer
+) -> None:
+    from datetime import UTC, date, datetime, time
+
+    from custom_components.schulportal_hessen.parsers import Lesson, Substitution
+
+    freezer.move_to(datetime(2026, 11, 9, 15, 0, tzinfo=UTC))  # Monday 07:00 local
+    portal.lessons = [
+        Lesson(0, "1", time(8, 0), time(8, 45), "M", "ABC", "R1", ""),
+        Lesson(0, "2", time(8, 50), time(9, 35), "D", "DEF", "R2", ""),
+        Lesson(0, "3", time(9, 50), time(10, 35), "E", "GHI", "R3", ""),
+    ]
+    monday = date(2026, 11, 9)
+    portal.substitutions = [
+        make_sub(monday, "1"),  # M cancelled
+        Substitution(
+            day=monday, lesson="2", classes=("10A",), substitute="XYZ", teacher="DEF",
+            kind="Vertretung", subject="D", subject_old="", room="R7", note="Aufgaben",
+        ),
+    ]
+    await setup(hass, entry)
+
+    result = await hass.services.async_call(
+        "calendar",
+        "get_events",
+        {
+            "entity_id": eid(hass, entry, "calendar", "timetable"),
+            "start_date_time": "2026-11-09T00:00:00-08:00",
+            "end_date_time": "2026-11-09T23:59:00-08:00",
+        },
+        blocking=True,
+        return_response=True,
+    )
+    events = result[eid(hass, entry, "calendar", "timetable")]["events"]
+    summaries = [e["summary"] for e in events]
+    assert summaries == ["Entfall: Mathematik", "Vertretung: Deutsch", "Englisch"]
+    assert "XYZ" in events[1]["description"] and events[1]["location"] == "R7"

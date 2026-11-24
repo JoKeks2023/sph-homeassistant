@@ -221,3 +221,23 @@ def test_next_school_start():
     # after today's first lesson began, today no longer counts -> Wednesday
     late = datetime(2026, 11, 9, 8, 10, tzinfo=TZ)
     assert timetable.next_school_start(_plan(), late, TZ)[1] == datetime(2026, 11, 11, 8, 0, tzinfo=TZ)
+
+
+def test_matching_substitution_kinds():
+    ms = timetable.matching_substitution
+    lesson = _plan()[0]  # Monday period 1, subject M
+    # room change: subject sits in "Fach" (new), subject_old empty
+    room = parsers.Substitution(
+        day=MONDAY, lesson="1", classes=("10A",), substitute="", teacher="ABC",
+        kind="Raumänderung", subject="M", subject_old="", room="R9", note="",
+    )
+    assert ms(lesson, MONDAY, [room]) is room
+    # same row on another day or for another subject does not match
+    assert ms(lesson, date(2026, 11, 10), [room]) is None
+    assert ms(_plan()[1], MONDAY, [room]) is None
+    # range rows cover the lesson's first period
+    rng = _sub(MONDAY, "1 - 2")
+    assert ms(lesson, MONDAY, [rng]) is rng
+    # a cancellation wins over a room change
+    cancel = _sub(MONDAY, "1")
+    assert ms(lesson, MONDAY, [room, cancel]) is cancel

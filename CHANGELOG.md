@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Stundenplan-Kalender rechnet Vertretungen, Entfall und Raumänderungen der eigenen Klasse
+  ein (Titel-Präfix, Beschreibung). Zuordnung nur bei passender Stundennummer und Fach
+  (SPHA-41).
 * „Nächste Stunde“ überspringt entfallene Stunden (Attribut `skipped_cancelled`); neuer
   Zeitstempel-Sensor „Unterrichtsbeginn“ (erste stattfindende Stunde des nächsten Schultags).
   Eine Stunde gilt nur als entfallen, wenn Stundennummer **und** Fach zum Entfall passen
