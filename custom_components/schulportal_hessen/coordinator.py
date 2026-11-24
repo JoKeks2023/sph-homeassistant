@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 from icalendar import Calendar
@@ -30,6 +31,7 @@ from .const import (
     TTL_TIMETABLE,
     UPDATE_INTERVAL,
 )
+from . import snapshot
 from .parsers import Homework, Lesson, Substitution
 
 if TYPE_CHECKING:
@@ -49,6 +51,16 @@ class SphData:
     homework: list[Homework] = field(default_factory=list)
     calendars: dict[int, Calendar] = field(default_factory=dict)
     fetched: dict[str, datetime] = field(default_factory=dict)
+    # True while the portal could not be reached and old data is being served.
+    stale: bool = False
+
+    def has_fetched(self, key: str) -> bool:
+        """Return True if category ``key`` was loaded at least once.
+
+        Distinguishes "portal returned nothing" (empty list) from "never loaded"
+        (unknown), so sensors do not report 0 before any data exists.
+        """
+        return key in self.fetched
 
     def has_applet(self, key: str) -> bool:
         """Return True if the portal lists a module containing ``key``."""
@@ -71,6 +83,11 @@ class SphData:
         return [s for s in self.substitutions if id(s) not in mine]
 
 
+def store_key(entry_id: str) -> str:
+    """Storage key of the cached snapshot of one config entry."""
+    return f"{DOMAIN}_{entry_id}"
+
+
 class SphCoordinator(DataUpdateCoordinator[SphData]):
     """Fetch data with a separate time-to-live per category."""
 
@@ -89,6 +106,43 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
         self.client = client
         self._data = SphData()
         self._first = True
+        self._store: Store[dict] = Store(hass, 1, store_key(entry.entry_id))
+
+    async def _async_setup(self) -> None:
+        """Restore the last snapshot so a restart works while the portal is down.
+
+        Calendars are not restored (they are refetched); the fetch timestamps of
+        the other categories are, so fresh data is not requested again.
+        """
+        try:
+            raw = await self._store.async_load()
+        except Exception:  # noqa: BLE001 - corrupt storage must not block setup
+            _LOGGER.warning("Could not read stored data, starting empty")
+            return
+        restored = snapshot.load(raw) if raw else None
+        if restored is None:
+            return
+        data = self._data
+        data.applets = restored["applets"]
+        data.own_class = restored["own_class"]
+        data.substitutions = restored["substitutions"]
+        data.lessons = restored["lessons"]
+        data.homework = restored["homework"]
+        data.fetched = restored["fetched"]
+
+    def _save(self) -> None:
+        data = self._data
+        self._store.async_delay_save(
+            lambda: snapshot.dump(
+                applets=data.applets,
+                own_class=data.own_class,
+                substitutions=data.substitutions,
+                lessons=data.lessons,
+                homework=data.homework,
+                fetched={k: v for k, v in data.fetched.items() if k != "calendar"},
+            ),
+            30,
+        )
 
     def _due(self, key: str, ttl: timedelta) -> bool:
         last = self._data.fetched.get(key)
@@ -157,7 +211,14 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
             raise UpdateFailed("Schulportal Hessen not reachable") from err
 
         if attempted and failures == attempted:
-            raise UpdateFailed("Schulportal Hessen could not be read")
+            if not data.fetched:
+                raise UpdateFailed("Schulportal Hessen could not be read")
+            # Keep serving the last known data instead of going unavailable.
+            data.stale = True
+            return data
+        data.stale = False
+        if attempted:
+            self._save()
 
         if not self._first:
             for item in data.homework:

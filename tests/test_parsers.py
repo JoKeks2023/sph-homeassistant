@@ -83,3 +83,30 @@ def test_full_subject():
     assert subjects.full_subject("M") == "Mathematik"
     assert subjects.full_subject("AG_Astronomie") == "AG Astronomie"
     assert subjects.full_subject("XYZ") == "XYZ"
+
+
+snapshot = importlib.import_module("sph.snapshot")
+
+
+def test_snapshot_roundtrip():
+    subs = parse_substitutions(read("vertretungsplan.html"))
+    own_class, lessons = parse_timetable(read("stundenplan.html"))
+    homework = parse_homework(read("meinunterricht.html"))
+    fetched = {"substitutions": datetime(2026, 11, 10, 8, 0, tzinfo=timezone.utc)}
+    raw = snapshot.dump(
+        applets=["Vertretungsplan"], own_class=own_class, substitutions=subs,
+        lessons=lessons, homework=homework, fetched=fetched,
+    )
+    import json
+    restored = snapshot.load(json.loads(json.dumps(raw)))  # must survive JSON
+    assert restored["substitutions"] == subs
+    assert restored["lessons"] == lessons
+    assert restored["homework"] == homework
+    assert restored["own_class"] == own_class
+    assert restored["fetched"] == fetched
+
+
+def test_snapshot_rejects_garbage():
+    assert snapshot.load({"version": 99}) is None
+    assert snapshot.load({"version": 1}) is None
+    assert snapshot.load({}) is None
