@@ -39,6 +39,8 @@ Server, Container oder Cloud-Dienst. Alles läuft direkt in Home Assistant.
 
 Voraussetzung: **Home Assistant 2024.11 oder neuer**.
 
+**Mehrere Kinder:** Integration einfach mehrfach hinzufügen (ein Eintrag je Konto). Für die Karte siehe [docs/dashboard.md](docs/dashboard.md#mehrere-kinder--konten).
+
 Es werden nur Entitäten für Module angelegt, die in deinem Portal-Account
 **freigeschaltet** sind.
 

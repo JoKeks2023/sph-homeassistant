@@ -47,10 +47,21 @@ class SchulportalHessenCard extends HTMLElement {
 
   // Entities are found through the "sph" attribute set by the integration,
   // unless configured explicitly via `entities: {next_lesson: sensor.x, ...}`.
+  // With several accounts (e.g. two children) set `entity:` to any sensor of
+  // the wanted account; all other sensors are then taken from that account.
+  _account() {
+    if (!this._config.entity) return null;
+    const ref = this._hass.states[this._config.entity];
+    return (ref && ref.attributes && ref.attributes.account) || null;
+  }
+
   _entity(kind) {
     const explicit = this._config.entities && this._config.entities[kind];
     if (explicit) return this._hass.states[explicit];
-    return Object.values(this._hass.states).find((s) => s.attributes && s.attributes.sph === kind);
+    const account = this._account();
+    return Object.values(this._hass.states).find(
+      (s) => s.attributes && s.attributes.sph === kind && (!account || s.attributes.account === account)
+    );
   }
 
   _render() {
@@ -60,6 +71,11 @@ class SchulportalHessenCard extends HTMLElement {
     const card = h("ha-card", {});
     if (this._config.title) card.append(h("div", { class: "title" }, this._config.title));
 
+    if (this._config.entity && !this._account()) {
+      card.append(h("div", { class: "empty" }, `Entität ${this._config.entity} nicht gefunden.`));
+      root.append(card);
+      return;
+    }
     const found = SPH_KINDS.map((k) => this._entity(k)).some(Boolean);
     if (!found) {
       card.append(h("div", { class: "empty" }, "Keine Schulportal-Entitäten gefunden."));

@@ -22,7 +22,7 @@ class SphEntity(CoordinatorEntity[SphCoordinator]):
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.data.get(CONF_SCHOOL_NAME) or "Schulportal Hessen",
+            name=entry.title or entry.data.get(CONF_SCHOOL_NAME) or "Schulportal Hessen",
             manufacturer="Schulportal Hessen (inoffiziell)",
             entry_type=DeviceEntryType.SERVICE,
         )

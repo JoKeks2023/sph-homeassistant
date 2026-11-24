@@ -195,6 +195,8 @@ class SphSensor(SphEntity, SensorEntity):
         """
         return {
             "sph": self.entity_description.key,
+            # Opaque id of the config entry: lets the card tell accounts apart.
+            "account": self.coordinator.config_entry.entry_id,
             "stale": self.coordinator.data.stale,
             **self.entity_description.attrs_fn(self.coordinator.data),
         }
