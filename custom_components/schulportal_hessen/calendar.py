@@ -17,7 +17,8 @@ from .const import APPLET_CALENDAR, APPLET_TIMETABLE
 from .coordinator import SphCoordinator
 from .entity import SphEntity
 from .subjects import full_subject
-from .timetable import lessons_between, next_lesson
+from .timetable import lessons_between, matching_substitution, next_lesson
+from .cancellations import is_cancellation
 
 
 async def async_setup_entry(
@@ -101,24 +102,46 @@ class SphSchoolCalendar(SphEntity, CalendarEntity):
 
 
 class SphTimetableCalendar(SphEntity, CalendarEntity):
-    """The regular weekly timetable expanded into calendar events.
+    """The weekly timetable expanded into calendar events.
 
-    Substitutions are NOT merged in; see the substitutions sensor.
+    Substitutions for the own class are merged in: cancelled or changed
+    lessons get a prefix ("Entfall: Mathematik") and the changed details.
     """
 
     def __init__(self, coordinator: SphCoordinator) -> None:
         """Initialise the calendar."""
         super().__init__(coordinator, "timetable")
 
-    @staticmethod
-    def _to_event(lesson: Any, start: datetime, end: datetime) -> CalendarEvent:
-        details = ", ".join(part for part in (lesson.teacher, lesson.room) if part)
+    def _to_event(self, lesson: Any, start: datetime, end: datetime) -> CalendarEvent:
+        sub = matching_substitution(
+            lesson, start.date(), self.coordinator.data.my_substitutions()
+        )
+        if sub is None:
+            details = ", ".join(part for part in (lesson.teacher, lesson.room) if part)
+            return CalendarEvent(
+                start=start,
+                end=end,
+                summary=full_subject(lesson.subject),
+                description=details or None,
+                location=lesson.room or None,
+            )
+        if is_cancellation(sub):
+            subject = full_subject(lesson.subject)
+            summary = f"{sub.kind}: {subject}"
+            room = lesson.room
+            who = lesson.teacher
+        else:
+            subject = full_subject(sub.subject or lesson.subject)
+            summary = f"{sub.kind}: {subject}"
+            room = sub.room or lesson.room
+            who = sub.substitute or lesson.teacher
+        details = ", ".join(part for part in (who, room, sub.note) if part)
         return CalendarEvent(
             start=start,
             end=end,
-            summary=full_subject(lesson.subject),
+            summary=summary,
             description=details or None,
-            location=lesson.room or None,
+            location=room or None,
         )
 
     @property
