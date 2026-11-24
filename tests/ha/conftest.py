@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from datetime import time
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -21,6 +21,19 @@ from custom_components.schulportal_hessen.parsers import Lesson, Substitution
 @pytest.fixture(autouse=True)
 def _enable_custom_integrations(enable_custom_integrations):
     """Allow loading custom_components in every test."""
+
+
+@pytest.fixture(autouse=True)
+def _no_http_frontend(hass) -> Generator[None]:
+    """Treat the http/frontend dependencies as set up.
+
+    The integration only registers its Lovelace card with them; starting the
+    real frontend is neither needed nor possible in the test environment.
+    """
+    hass.config.components.update({"http", "frontend"})
+    hass.http = MagicMock(async_register_static_paths=AsyncMock())
+    with patch("custom_components.schulportal_hessen.add_extra_js_url"):
+        yield
 
 
 def make_sub(day, lesson, kind="Entfall", classes=("10A",), teacher="ABC") -> Substitution:
