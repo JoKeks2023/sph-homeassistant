@@ -196,3 +196,30 @@ async def test_config_flow_invalid_auth(hass: HomeAssistant) -> None:
         )
     assert result["type"] == "form"
     assert result["errors"] == {"base": "invalid_auth"}
+
+
+async def test_new_cancellation_event(
+    hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal
+) -> None:
+    from pytest_homeassistant_custom_component.common import async_capture_events
+
+    today = dt_util.now().date()
+    portal.substitutions = [make_sub(today, "1")]
+    await setup(hass, entry)
+    cancellations = async_capture_events(hass, "schulportal_hessen_new_cancellation")
+    substitutions = async_capture_events(hass, "schulportal_hessen_new_substitution")
+    assert not cancellations  # nothing fires on the first load
+
+    portal.substitutions = [
+        make_sub(today, "1"),  # already known
+        make_sub(today, "2"),  # new cancellation
+        make_sub(today, "4", kind="Vertretung"),  # new, but not a cancellation
+        make_sub(today, "3", classes=("9C",)),  # other class
+    ]
+    coordinator = entry.runtime_data
+    coordinator._data.fetched.pop("substitutions")
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    assert [e.data["lesson"] for e in cancellations] == ["2"]
+    assert sorted(e.data["lesson"] for e in substitutions) == ["2", "4"]

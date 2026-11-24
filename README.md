@@ -49,7 +49,8 @@ Dashboard: mitgelieferte Karte `custom:schulportal-hessen-card` plus Markdown-Al
 | Event | Wann |
 |---|---|
 | `schulportal_hessen_new_homework` | neue Hausaufgabe (`course`, `topic`, `text`, `lesson_date`) |
-| `schulportal_hessen_new_substitution` | neue Vertretung für deine Klasse |
+| `schulportal_hessen_new_substitution` | neue Vertretung für deine Klasse (**auch** bei Entfall) |
+| `schulportal_hessen_new_cancellation` | neuer Entfall für deine Klasse (zusätzlich zu `new_substitution`; `date`, `lesson`, `subject_old`, `teacher`, `note`) |
 
 Beim ersten Laden werden keine Events ausgelöst, nur bei späteren Neuigkeiten.
 
@@ -151,7 +152,8 @@ No extra server, container or cloud service.
 Requires **Home Assistant 2024.11 or newer**.
 
 Events for automations: `schulportal_hessen_new_homework`,
-`schulportal_hessen_new_substitution`.
+`schulportal_hessen_new_substitution` (also fired for cancellations),
+`schulportal_hessen_new_cancellation` (cancellations only, in addition).
 
 **Not implemented:** messages and exams/tests – they are not enabled for the author's
 account and could not be verified; nothing is simulated.

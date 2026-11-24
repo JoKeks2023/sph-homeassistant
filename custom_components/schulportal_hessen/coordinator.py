@@ -22,6 +22,7 @@ from .const import (
     APPLET_SUBSTITUTIONS,
     APPLET_TIMETABLE,
     DOMAIN,
+    EVENT_NEW_CANCELLATION,
     EVENT_NEW_HOMEWORK,
     EVENT_NEW_SUBSTITUTION,
     TTL_APPLETS,
@@ -32,6 +33,7 @@ from .const import (
     UPDATE_INTERVAL,
 )
 from . import snapshot
+from .cancellations import is_cancellation
 from .parsers import Homework, Lesson, Substitution
 
 if TYPE_CHECKING:
@@ -227,5 +229,7 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
             for sub in data.my_substitutions():
                 if sub.uid not in old_subs:
                     self.hass.bus.async_fire(EVENT_NEW_SUBSTITUTION, sub.as_dict())
+                    if is_cancellation(sub):
+                        self.hass.bus.async_fire(EVENT_NEW_CANCELLATION, sub.as_dict())
         self._first = False
         return data

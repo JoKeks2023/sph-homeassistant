@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Neues Event `schulportal_hessen_new_cancellation` für neuen Entfall der eigenen Klasse
+  (zusätzlich zu `new_substitution`) (SPHA-43).
 * Entfall-Sensoren sind „nicht verfügbar“, solange der Vertretungsplan nie geladen
   wurde, und tragen das Attribut `stale` (Folgearbeit zu SPHA-19/SPHA-35).
 * Mindestversion Home Assistant 2024.11 (`hacs.json`, README) (SPHA-39).
