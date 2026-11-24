@@ -9,13 +9,22 @@ from typing import Any
 import aiohttp
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
+from homeassistant.core import callback
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.helpers.aiohttp_client import (
     async_create_clientsession,
     async_get_clientsession,
 )
 from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
     SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
@@ -26,7 +35,15 @@ from homeassistant.helpers.selector import (
 )
 
 from .api import SphAuthError, SphClient, SphError, search_schools
-from .const import CONF_QUERY, CONF_SCHOOL, CONF_SCHOOL_ID, CONF_SCHOOL_NAME, DOMAIN
+from .const import (
+    CONF_FIRST_HOURS,
+    CONF_QUERY,
+    CONF_SCHOOL,
+    CONF_SCHOOL_ID,
+    CONF_SCHOOL_NAME,
+    DEFAULT_FIRST_HOURS,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 MAX_RESULTS = 100
@@ -36,6 +53,12 @@ class SphConfigFlow(ConfigFlow, domain=DOMAIN):
     """Search school -> pick school -> enter credentials."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        """Return the options flow."""
+        return SphOptionsFlow()
 
     def __init__(self) -> None:
         """Initialise the flow."""
@@ -186,4 +209,30 @@ class SphConfigFlow(ConfigFlow, domain=DOMAIN):
             ),
             description_placeholders={"school": entry.data[CONF_SCHOOL_NAME]},
             errors=errors,
+        )
+
+
+class SphOptionsFlow(OptionsFlow):
+    """Options: how many first periods count for the "first hours" sensor."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show the options form."""
+        if user_input is not None:
+            return self.async_create_entry(
+                data={CONF_FIRST_HOURS: int(user_input[CONF_FIRST_HOURS])}
+            )
+        current = self.config_entry.options.get(CONF_FIRST_HOURS, DEFAULT_FIRST_HOURS)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_FIRST_HOURS, default=current): NumberSelector(
+                        NumberSelectorConfig(
+                            min=1, max=10, step=1, mode=NumberSelectorMode.BOX
+                        )
+                    )
+                }
+            ),
         )

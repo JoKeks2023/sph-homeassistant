@@ -64,6 +64,30 @@
       "timetable": {
         "name": "Timetable"
       }
+    },
+    "binary_sensor": {
+      "cancellation_today": {
+        "name": "Cancellation today"
+      },
+      "cancellation_first_hours": {
+        "name": "Cancellation in first periods"
+      },
+      "cancellation_tomorrow": {
+        "name": "Cancellation tomorrow"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "first_hours": "Number of first periods"
+        },
+        "data_description": {
+          "first_hours": "The 'Cancellation in first periods' sensor is on if any of periods 1 to N is cancelled."
+        }
+      }
     }
   }
 }
