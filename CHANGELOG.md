@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Doku: Hinweis, dass das Hausaufgaben-Datum das Stundendatum und kein Abgabetermin ist.
+  Eine Fälligkeits-Erkennung im Text wurde bewusst nicht eingebaut (keine echten Daten als
+  Beleg) (SPHA-46).
 * Mehrere Konten: neue Einträge heißen „Schule (Benutzername)“ und tragen das im Gerät;
   Sensoren haben das Attribut `account`; die Karte hat die Option `entity` zur Auswahl
   des Kontos (SPHA-45). Bestehende Einträge bleiben unverändert.
