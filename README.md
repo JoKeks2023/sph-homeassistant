@@ -36,6 +36,8 @@ Server, Container oder Cloud-Dienst. Alles läuft direkt in Home Assistant.
 | 📚 | **Hausaufgaben** | Sensor „Hausaufgaben“ | Aktuelle Hausaufgabe je Kurs. |
 | 🏫 | **Schulkalender** | Kalender „Schulkalender“ | Aus dem iCal-Export des Portals. |
 
+Voraussetzung: **Home Assistant 2024.11 oder neuer**.
+
 Es werden nur Entitäten für Module angelegt, die in deinem Portal-Account
 **freigeschaltet** sind.
 
@@ -143,6 +145,8 @@ No extra server, container or cloud service.
 | Substitutions | sensor | count + list for your class (auto-detected) |
 | Homework | sensor | latest entry per course; the date is the lesson date, **not** a due date |
 | School calendar | calendar | from the portal's iCal export |
+
+Requires **Home Assistant 2024.11 or newer**.
 
 Events for automations: `schulportal_hessen_new_homework`,
 `schulportal_hessen_new_substitution`.

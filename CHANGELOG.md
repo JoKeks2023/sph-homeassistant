@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Mindestversion Home Assistant 2024.11 (`hacs.json`, README) (SPHA-39).
+
 ## 0.1.0 – 2026-11-12
 
 * Erste Version: Config Flow mit Schulsuche, Stundenplan (Kalender + Sensor),
