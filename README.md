@@ -34,7 +34,7 @@ Server, Container oder Cloud-Dienst. Alles läuft direkt in Home Assistant.
 | 🗓️ | **Stundenplan** | Kalender „Stundenplan“ · Sensoren „Nächste Stunde“ und „Unterrichtsbeginn“ | Wochenplan **mit eingerechneten Vertretungen** deiner Klasse (Kalender: „Entfall: Mathematik“, „Vertretung: …“, neue Raum/Lehrkraft in der Beschreibung); die Sensoren überspringen entfallene Stunden. Eine Stunde wird nur verändert, wenn Stundennummer **und** Fach zum Eintrag passen; bei Doppelstunden zählt die erste Stunde. |
 | 🔄 | **Vertretungsplan** | Sensoren „Vertretungen“ (deine Klasse) und „Vertretungen andere Klassen“ | Anzahl + Liste (Attribute), Klasse automatisch erkannt. |
 | ❌ | **Entfall** | Binary-Sensoren „Entfall heute“, „Entfall in den ersten Stunden“, „Entfall morgen“ | Nur für deine Klasse. „Erste Stunden“ = Stunde 1 bis N, N einstellbar unter *Konfigurieren* (Standard 2). |
-| 📚 | **Hausaufgaben** | Sensor „Hausaufgaben“ | Aktuelle Hausaufgabe je Kurs. |
+| 📚 | **Hausaufgaben** | Sensor „Hausaufgaben“ | Aktuelle Hausaufgabe je Kurs. Das Datum (`lesson_date`) ist das der **Stunde**, kein Abgabetermin – das Portal liefert keinen. |
 | 🏫 | **Schulkalender** | Kalender „Schulkalender“ | Aus dem iCal-Export des Portals. |
 
 Voraussetzung: **Home Assistant 2024.11 oder neuer**.
