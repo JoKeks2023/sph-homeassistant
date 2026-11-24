@@ -92,5 +92,11 @@
         }
       }
     }
+  },
+  "issues": {
+    "timetable_structure": {
+      "title": "Stundenplan wird nicht mehr erkannt",
+      "description": "Das Schulportal liefert den Stundenplan, die Integration findet darin aber keine Stunden mehr. Möglicherweise hat sich das Portal geändert, oder dein Stundenplan ist wirklich leer. Wenn du Stunden erwartest, melde das bitte als Issue auf GitHub (ohne Passwörter oder persönliche Daten)."
+    }
   }
 }

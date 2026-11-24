@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Repair-Hinweis, wenn der Stundenplan bei zwei Abrufen in Folge keine Stunden liefert
+  (mögliche Portal-Änderung). Für Vertretungen/Hausaufgaben nicht aktiv, da dort „leer“
+  normal ist (SPHA-44).
 * Stundenplan-Kalender rechnet Vertretungen, Entfall und Raumänderungen der eigenen Klasse
   ein (Titel-Präfix, Beschreibung). Zuordnung nur bei passender Stundennummer und Fach
   (SPHA-41).

@@ -287,3 +287,32 @@ async def test_timetable_calendar_merges_substitutions(
     summaries = [e["summary"] for e in events]
     assert summaries == ["Entfall: Mathematik", "Vertretung: Deutsch", "Englisch"]
     assert "XYZ" in events[1]["description"] and events[1]["location"] == "R7"
+
+
+async def test_repair_issue_for_empty_timetable(
+    hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal
+) -> None:
+    from datetime import time
+
+    from homeassistant.helpers import issue_registry as ir
+
+    from custom_components.schulportal_hessen.parsers import Lesson
+
+    issue_id = f"timetable_structure_{entry.entry_id}"
+    registry = ir.async_get(hass)
+
+    async def refresh() -> None:
+        coordinator = entry.runtime_data
+        coordinator._data.fetched.pop("timetable", None)
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+
+    portal.lessons = []
+    await setup(hass, entry)  # first empty fetch
+    assert registry.async_get_issue(DOMAIN, issue_id) is None  # one is not enough
+    await refresh()  # second empty fetch
+    assert registry.async_get_issue(DOMAIN, issue_id) is not None
+
+    portal.lessons = [Lesson(0, "1", time(8, 0), time(8, 45), "M", "ABC", "R1", "")]
+    await refresh()
+    assert registry.async_get_issue(DOMAIN, issue_id) is None
