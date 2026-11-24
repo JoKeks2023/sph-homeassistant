@@ -31,7 +31,7 @@ Server, Container oder Cloud-Dienst. Alles läuft direkt in Home Assistant.
 
 | | Bereich | Entität | Details |
 |---|---|---|---|
-| 🗓️ | **Stundenplan** | Kalender „Stundenplan“ · Sensor „Nächste Stunde“ | Regulärer Wochenplan. Vertretungen sind darin **nicht** eingerechnet. |
+| 🗓️ | **Stundenplan** | Kalender „Stundenplan“ · Sensoren „Nächste Stunde“ und „Unterrichtsbeginn“ | Regulärer Wochenplan. Im Kalender sind Vertretungen **nicht** eingerechnet; die beiden Sensoren überspringen entfallene Stunden (Stundennummer und Fach müssen zum Entfall passen, bei Doppelstunden zählt die erste Stunde). |
 | 🔄 | **Vertretungsplan** | Sensoren „Vertretungen“ (deine Klasse) und „Vertretungen andere Klassen“ | Anzahl + Liste (Attribute), Klasse automatisch erkannt. |
 | ❌ | **Entfall** | Binary-Sensoren „Entfall heute“, „Entfall in den ersten Stunden“, „Entfall morgen“ | Nur für deine Klasse. „Erste Stunden“ = Stunde 1 bis N, N einstellbar unter *Konfigurieren* (Standard 2). |
 | 📚 | **Hausaufgaben** | Sensor „Hausaufgaben“ | Aktuelle Hausaufgabe je Kurs. |

@@ -55,6 +55,9 @@
       },
       "other_substitutions": {
         "name": "Vertretungen andere Klassen"
+      },
+      "school_start": {
+        "name": "Unterrichtsbeginn"
       }
     },
     "calendar": {

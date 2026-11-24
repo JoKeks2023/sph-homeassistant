@@ -158,3 +158,66 @@ def test_first_hours_with_range():
     assert cancellations.is_cancellation(sub)
     assert cancellations.first_hours_cancelled([sub], 2)
     assert not cancellations.first_hours_cancelled([sub], 1)
+
+
+def _sub(day, lesson, subject_old="M", kind="Entfall"):
+    return parsers.Substitution(
+        day=day, lesson=lesson, classes=("10A",), substitute="", teacher="ABC",
+        kind=kind, subject="", subject_old=subject_old, room="", note="",
+    )
+
+
+def _plan():
+    mk = parsers.Lesson
+    return [
+        mk(0, "1", time(8, 0), time(8, 45), "M", "ABC", "R1", ""),
+        mk(0, "2", time(8, 50), time(9, 35), "D", "DEF", "R2", ""),
+        mk(2, "1", time(8, 0), time(8, 45), "E", "GHI", "R3", ""),
+    ]
+
+
+MONDAY = date(2026, 11, 9)
+
+
+def test_next_lesson_skips_cancelled():
+    now = datetime(2026, 11, 9, 7, 0, tzinfo=TZ)
+    found, skipped = timetable.next_lesson_skipping_cancelled(
+        _plan(), now, TZ, [_sub(MONDAY, "1")]
+    )
+    assert found[0].subject == "D"
+    assert [item.subject for item, _ in skipped] == ["M"]
+
+
+def test_cancellation_must_match_subject_and_period():
+    now = datetime(2026, 11, 9, 7, 0, tzinfo=TZ)
+    # other subject than the lesson -> not my lesson, must NOT be hidden
+    found, skipped = timetable.next_lesson_skipping_cancelled(
+        _plan(), now, TZ, [_sub(MONDAY, "1", subject_old="X")]
+    )
+    assert found[0].subject == "M" and skipped == []
+    # row without subject matches by period alone
+    found, _ = timetable.next_lesson_skipping_cancelled(
+        _plan(), now, TZ, [_sub(MONDAY, "1", subject_old="")]
+    )
+    assert found[0].subject == "D"
+    # a "Vertretung" is not a cancellation
+    found, _ = timetable.next_lesson_skipping_cancelled(
+        _plan(), now, TZ, [_sub(MONDAY, "1", kind="Vertretung")]
+    )
+    assert found[0].subject == "M"
+
+
+def test_next_school_start():
+    early = datetime(2026, 11, 9, 7, 0, tzinfo=TZ)
+    assert timetable.next_school_start(_plan(), early, TZ)[1] == datetime(2026, 11, 9, 8, 0, tzinfo=TZ)
+    # first lesson cancelled -> starts with the second one
+    got = timetable.next_school_start(_plan(), early, TZ, [_sub(MONDAY, "1")])
+    assert got[1] == datetime(2026, 11, 9, 8, 50, tzinfo=TZ)
+    # whole Monday cancelled -> Wednesday
+    got = timetable.next_school_start(
+        _plan(), early, TZ, [_sub(MONDAY, "1"), _sub(MONDAY, "2", subject_old="D")]
+    )
+    assert got[1] == datetime(2026, 11, 11, 8, 0, tzinfo=TZ)
+    # after today's first lesson began, today no longer counts -> Wednesday
+    late = datetime(2026, 11, 9, 8, 10, tzinfo=TZ)
+    assert timetable.next_school_start(_plan(), late, TZ)[1] == datetime(2026, 11, 11, 8, 0, tzinfo=TZ)

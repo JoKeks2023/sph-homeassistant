@@ -7,7 +7,11 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
@@ -22,7 +26,7 @@ from .const import (
 from .coordinator import SphData
 from .entity import SphEntity
 from .subjects import full_subject
-from .timetable import next_lesson
+from .timetable import next_lesson_skipping_cancelled, next_school_start
 
 SCAN_INTERVAL = timedelta(minutes=1)
 
@@ -38,7 +42,10 @@ class SphSensorDescription(SensorEntityDescription):
 
 
 def _next_lesson(data: SphData):
-    return next_lesson(data.lessons, dt_util.now(), dt_util.DEFAULT_TIME_ZONE)
+    found, _skipped = next_lesson_skipping_cancelled(
+        data.lessons, dt_util.now(), dt_util.DEFAULT_TIME_ZONE, data.my_substitutions()
+    )
+    return found
 
 
 def _next_lesson_value(data: SphData) -> str | None:
@@ -47,7 +54,9 @@ def _next_lesson_value(data: SphData) -> str | None:
 
 
 def _next_lesson_attrs(data: SphData) -> dict[str, Any]:
-    found = _next_lesson(data)
+    found, skipped = next_lesson_skipping_cancelled(
+        data.lessons, dt_util.now(), dt_util.DEFAULT_TIME_ZONE, data.my_substitutions()
+    )
     if not found:
         return {}
     lesson, start, end = found
@@ -59,6 +68,29 @@ def _next_lesson_attrs(data: SphData) -> dict[str, Any]:
         "room": lesson.room,
         "period": lesson.period,
         "class": data.own_class,
+        # Cancelled lessons skipped on the way to this one.
+        "skipped_cancelled": [
+            {"subject": full_subject(item.subject), "start": at.isoformat()}
+            for item, at in skipped
+        ][:MAX_ATTRIBUTE_ITEMS],
+    }
+
+
+def _school_start(data: SphData):
+    return next_school_start(
+        data.lessons, dt_util.now(), dt_util.DEFAULT_TIME_ZONE, data.my_substitutions()
+    )
+
+
+def _school_start_attrs(data: SphData) -> dict[str, Any]:
+    found = _school_start(data)
+    if not found:
+        return {}
+    lesson, _start = found
+    return {
+        "first_lesson": full_subject(lesson.subject),
+        "period": lesson.period,
+        "room": lesson.room,
     }
 
 
@@ -69,6 +101,14 @@ SENSORS: tuple[SphSensorDescription, ...] = (
         applet=APPLET_TIMETABLE,
         value_fn=_next_lesson_value,
         attrs_fn=_next_lesson_attrs,
+    ),
+    SphSensorDescription(
+        key="school_start",
+        fetch_key="timetable",
+        applet=APPLET_TIMETABLE,
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=lambda data: (found[1] if (found := _school_start(data)) else None),
+        attrs_fn=_school_start_attrs,
     ),
     SphSensorDescription(
         key="substitutions",

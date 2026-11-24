@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* „Nächste Stunde“ überspringt entfallene Stunden (Attribut `skipped_cancelled`); neuer
+  Zeitstempel-Sensor „Unterrichtsbeginn“ (erste stattfindende Stunde des nächsten Schultags).
+  Eine Stunde gilt nur als entfallen, wenn Stundennummer **und** Fach zum Entfall passen
+  (SPHA-42).
 * Neues Event `schulportal_hessen_new_cancellation` für neuen Entfall der eigenen Klasse
   (zusätzlich zu `new_substitution`) (SPHA-43).
 * Entfall-Sensoren sind „nicht verfügbar“, solange der Vertretungsplan nie geladen
