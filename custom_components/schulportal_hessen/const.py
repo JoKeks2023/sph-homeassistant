@@ -28,3 +28,12 @@ EVENT_NEW_HOMEWORK = f"{DOMAIN}_new_homework"
 EVENT_NEW_SUBSTITUTION = f"{DOMAIN}_new_substitution"
 
 MAX_ATTRIBUTE_ITEMS = 25
+
+# Substitution kinds ("Art") that mean the lesson does not take place
+# (lower case, exact match). Extend if the portal uses further wording.
+CANCELLATION_KINDS = frozenset(
+    {"entfall", "freisetzung", "unterrichtsfrei", "entfällt", "fällt aus"}
+)
+
+CONF_FIRST_HOURS = "first_hours"
+DEFAULT_FIRST_HOURS = 2
