@@ -32,6 +32,7 @@ class SphSensorDescription(SensorEntityDescription):
     """Sensor description with the portal module it depends on."""
 
     applet: str
+    fetch_key: str
     value_fn: Callable[[SphData], Any]
     attrs_fn: Callable[[SphData], dict[str, Any]]
 
@@ -64,12 +65,14 @@ def _next_lesson_attrs(data: SphData) -> dict[str, Any]:
 SENSORS: tuple[SphSensorDescription, ...] = (
     SphSensorDescription(
         key="next_lesson",
+        fetch_key="timetable",
         applet=APPLET_TIMETABLE,
         value_fn=_next_lesson_value,
         attrs_fn=_next_lesson_attrs,
     ),
     SphSensorDescription(
         key="substitutions",
+        fetch_key="substitutions",
         applet=APPLET_SUBSTITUTIONS,
         value_fn=lambda data: len(data.my_substitutions()),
         attrs_fn=lambda data: {
@@ -80,6 +83,7 @@ SENSORS: tuple[SphSensorDescription, ...] = (
     ),
     SphSensorDescription(
         key="other_substitutions",
+        fetch_key="substitutions",
         applet=APPLET_SUBSTITUTIONS,
         value_fn=lambda data: len(data.other_substitutions()),
         attrs_fn=lambda data: {
@@ -91,6 +95,7 @@ SENSORS: tuple[SphSensorDescription, ...] = (
     ),
     SphSensorDescription(
         key="homework",
+        fetch_key="homework",
         applet=APPLET_HOMEWORK,
         value_fn=lambda data: len(data.homework),
         attrs_fn=lambda data: {
@@ -131,6 +136,13 @@ class SphSensor(SphEntity, SensorEntity):
         """Recompute state from cached data; never hits the portal."""
 
     @property
+    def available(self) -> bool:
+        """Unavailable until the category was loaded once (not "0 entries")."""
+        return super().available and self.coordinator.data.has_fetched(
+            self.entity_description.fetch_key
+        )
+
+    @property
     def native_value(self) -> Any:
         """Return the state."""
         return self.entity_description.value_fn(self.coordinator.data)
@@ -143,5 +155,6 @@ class SphSensor(SphEntity, SensorEntity):
         """
         return {
             "sph": self.entity_description.key,
+            "stale": self.coordinator.data.stale,
             **self.entity_description.attrs_fn(self.coordinator.data),
         }

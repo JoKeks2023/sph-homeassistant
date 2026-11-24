@@ -33,6 +33,7 @@ Server, Container oder Cloud-Dienst. Alles läuft direkt in Home Assistant.
 |---|---|---|---|
 | 🗓️ | **Stundenplan** | Kalender „Stundenplan“ · Sensor „Nächste Stunde“ | Regulärer Wochenplan. Vertretungen sind darin **nicht** eingerechnet. |
 | 🔄 | **Vertretungsplan** | Sensoren „Vertretungen“ (deine Klasse) und „Vertretungen andere Klassen“ | Anzahl + Liste (Attribute), Klasse automatisch erkannt. |
+| ❌ | **Entfall** | Binary-Sensoren „Entfall heute“, „Entfall in den ersten Stunden“, „Entfall morgen“ | Nur für deine Klasse. „Erste Stunden“ = Stunde 1 bis N, N einstellbar unter *Konfigurieren* (Standard 2). |
 | 📚 | **Hausaufgaben** | Sensor „Hausaufgaben“ | Aktuelle Hausaufgabe je Kurs. |
 | 🏫 | **Schulkalender** | Kalender „Schulkalender“ | Aus dem iCal-Export des Portals. |
 
@@ -143,6 +144,7 @@ No extra server, container or cloud service.
 |---|---|---|
 | Timetable | calendar + *next lesson* sensor | regular weekly plan, substitutions **not** merged in |
 | Substitutions | sensor | count + list for your class (auto-detected) |
+| Cancellations | 3 binary sensors | *today*, *first N periods* (N configurable, default 2), *tomorrow*; your class only |
 | Homework | sensor | latest entry per course; the date is the lesson date, **not** a due date |
 | School calendar | calendar | from the portal's iCal export |
 

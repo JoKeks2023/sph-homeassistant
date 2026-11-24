@@ -14,12 +14,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.helpers.storage import Store
 
 from .api import SphClient
 from .const import CONF_SCHOOL_ID, DOMAIN
-from .coordinator import SphCoordinator
+from .coordinator import SphCoordinator, store_key
 
-PLATFORMS = [Platform.SENSOR, Platform.CALENDAR]
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.CALENDAR]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -53,7 +54,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: SphConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
+
+
+async def _async_options_updated(hass: HomeAssistant, entry: SphConfigEntry) -> None:
+    """Reload so changed options take effect."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: SphConfigEntry) -> bool:
@@ -62,3 +69,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: SphConfigEntry) -> bool
     if unloaded:
         await entry.runtime_data.client.logout()
     return unloaded
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: SphConfigEntry) -> None:
+    """Delete the cached snapshot when the integration is removed."""
+    await Store(hass, 1, store_key(entry.entry_id)).async_remove()

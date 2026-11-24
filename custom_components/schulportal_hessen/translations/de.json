@@ -64,6 +64,30 @@
       "timetable": {
         "name": "Stundenplan"
       }
+    },
+    "binary_sensor": {
+      "cancellation_today": {
+        "name": "Entfall heute"
+      },
+      "cancellation_first_hours": {
+        "name": "Entfall in den ersten Stunden"
+      },
+      "cancellation_tomorrow": {
+        "name": "Entfall morgen"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Optionen",
+        "data": {
+          "first_hours": "Anzahl der ersten Stunden"
+        },
+        "data_description": {
+          "first_hours": "Der Sensor „Entfall in den ersten Stunden“ ist an, wenn eine der Stunden 1 bis N entfällt."
+        }
+      }
     }
   }
 }
