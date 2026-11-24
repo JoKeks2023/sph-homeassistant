@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Robustheit (SPHA-19): Bei Portalausfall werden die letzten Daten weiter angezeigt
+  (Attribut `stale`), statt alle Entitäten auf „nicht verfügbar“ zu setzen. Sensoren sind
+  „nicht verfügbar“, solange ihre Kategorie noch nie geladen wurde (statt „0 Einträge“).
+  Die letzten Daten werden lokal gespeichert (`.storage`, ohne Zugangsdaten) und nach
+  einem Neustart wiederhergestellt; beim Entfernen der Integration gelöscht.
 * Diagnostics mit Schwärzung (nur Struktur und Anzahlen, keine Zugangsdaten, Namen oder
   Inhalte); Fehlerlog bei Login-Check ohne Traceback (SPHA-26).
 * Neue Binary-Sensoren „Entfall heute“, „Entfall in den ersten Stunden“ (N einstellbar,
