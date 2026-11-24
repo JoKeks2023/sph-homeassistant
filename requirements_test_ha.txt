@@ -1,0 +1,4 @@
+pytest-homeassistant-custom-component
+beautifulsoup4
+icalendar
+recurring-ical-events
