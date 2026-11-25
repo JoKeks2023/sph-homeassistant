@@ -248,6 +248,14 @@ async def test_next_lesson_skips_cancelled_and_school_start(
     start = hass.states.get(eid(hass, entry, "sensor", "school_start"))
     assert start.state == "2026-11-09T16:50:00+00:00"  # 08:50 local
 
+    end = hass.states.get(eid(hass, entry, "sensor", "school_end"))
+    assert end.state == "2026-11-09T17:35:00+00:00"  # 09:35 local
+    overview = hass.states.get(eid(hass, entry, "sensor", "school_day_overview"))
+    assert overview.state == "1"
+    assert overview.attributes["total_lessons"] == 2
+    assert overview.attributes["cancelled_lessons"] == 1
+    assert overview.attributes["first_lesson"] == "Deutsch"
+
 
 async def test_timetable_calendar_merges_substitutions(
     hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal, freezer

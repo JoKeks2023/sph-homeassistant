@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Neu: Sensoren „Unterrichtsende“ (Zeitstempel) und „Tagesübersicht“ (Anzahl stattfindender Stunden; Attribute: erste/letzte Stunde, Beginn/Ende, entfallene Stunden, Vertretungen, Freistunden). Reine Berechnung aus Stundenplan und Vertretungen, Entfall eingerechnet. Freistunde = Lücke > 30 min zwischen zwei stattfindenden Stunden (Heuristik) (SPHA-59, SPHA-60, SPHA-61).
+
 ## 0.2.0 – 2026-11-24
 
 Neu: Entfall-Sensoren, Vertretungen im Stundenplan, Robustheit bei Portalausfall.

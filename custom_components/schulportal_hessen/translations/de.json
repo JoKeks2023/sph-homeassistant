@@ -58,6 +58,12 @@
       },
       "school_start": {
         "name": "Unterrichtsbeginn"
+      },
+      "school_end": {
+        "name": "Unterrichtsende"
+      },
+      "school_day_overview": {
+        "name": "Tagesübersicht"
       }
     },
     "calendar": {

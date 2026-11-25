@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta, tzinfo
 
 from .cancellations import is_cancellation, parse_periods
@@ -132,3 +133,86 @@ def next_school_start(
             first_per_day[day] = (lesson, start)
     later = [item for item in first_per_day.values() if item[1] > now]
     return min(later, key=lambda item: item[1]) if later else None
+
+
+FREE_PERIOD_MIN_GAP = timedelta(minutes=30)
+
+
+@dataclass(frozen=True)
+class DaySummary:
+    """Computed overview of one school day."""
+
+    day: date
+    total: int
+    cancelled: int
+    substitutions: int
+    first: tuple[Lesson, datetime] | None
+    last: tuple[Lesson, datetime] | None
+    free_periods: tuple[tuple[datetime, datetime], ...]
+
+
+def day_summary(
+    lessons: list[Lesson],
+    day: date,
+    tz: tzinfo,
+    rows: Iterable[Substitution] = (),
+) -> DaySummary | None:
+    """Summarise ``day`` from the timetable and the class's substitution rows.
+
+    First/last and free periods only consider lessons that take place. A free
+    period is a gap longer than ``FREE_PERIOD_MIN_GAP`` between two lessons
+    that take place (normal breaks are shorter); this is a heuristic.
+    Returns None if the timetable has no lesson on that weekday.
+    """
+    rows = [r for r in rows if r.day == day]
+    planned = sorted(
+        (item for item in lessons if item.weekday == day.weekday()),
+        key=lambda item: item.start,
+    )
+    if not planned:
+        return None
+    cancelled = 0
+    changed = 0
+    held: list[tuple[Lesson, datetime, datetime]] = []
+    for lesson in planned:
+        start, end = lesson_window(lesson, day, tz)
+        row = matching_substitution(lesson, day, rows)
+        if row is not None and is_cancellation(row):
+            cancelled += 1
+            continue
+        if row is not None:
+            changed += 1
+        held.append((lesson, start, end))
+    gaps = tuple(
+        (a[2], b[1])
+        for a, b in zip(held, held[1:], strict=False)
+        if b[1] - a[2] > FREE_PERIOD_MIN_GAP
+    )
+    return DaySummary(
+        day=day,
+        total=len(planned),
+        cancelled=cancelled,
+        substitutions=changed,
+        first=(held[0][0], held[0][1]) if held else None,
+        last=(held[-1][0], held[-1][2]) if held else None,
+        free_periods=gaps,
+    )
+
+
+def relevant_day_summary(
+    lessons: list[Lesson], now: datetime, tz: tzinfo, rows: Iterable[Substitution] = ()
+) -> DaySummary | None:
+    """Today's summary while today still has a lesson to come, else the next school day."""
+    rows = list(rows)
+    day = now.astimezone(tz).date()
+    for offset in range(14):
+        summary = day_summary(lessons, day + timedelta(days=offset), tz, rows)
+        if summary is None:
+            continue
+        if summary.last is None:  # whole day cancelled
+            if offset == 0:
+                return summary
+            continue
+        if summary.last[1] > now:
+            return summary
+    return None
