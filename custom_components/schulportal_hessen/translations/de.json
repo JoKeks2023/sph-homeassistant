@@ -72,6 +72,19 @@
           "stale": "Daten veraltet",
           "no_data": "Keine Daten"
         }
+      },
+      "school_week": {
+        "name": "Schultage diese Woche"
+      },
+      "data_quality": {
+        "name": "Datenqualität",
+        "state": {
+          "ok": "OK",
+          "warning": "Auffälligkeiten"
+        }
+      },
+      "change_history": {
+        "name": "Änderungshistorie"
       }
     },
     "calendar": {

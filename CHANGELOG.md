@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Neu: Diagnose-Sensor „Änderungshistorie“ (letzte 50 Änderungen/Events mit Zeitstempel, bleibt nach Neustart erhalten, Texte gekürzt) (SPHA-66).
+* Neu: Sensor „Schultage diese Woche“ (verbleibende Schultage; Attribute: Kalenderwoche, nächster Schultag). Ferien werden **nicht** berücksichtigt (SPHA-62).
+* Neu: Diagnose-Sensor „Datenqualität“ (ok / Auffälligkeiten) mit Liste, z. B. `timetable_empty`, `own_class_unknown`, `*_never_loaded`, `data_outdated` (SPHA-69).
 * Neue Events für Änderungen an bekannten Einträgen: `schulportal_hessen_room_changed` (`date`, `lesson`, `subject`, `old_room`, `new_room`), `schulportal_hessen_teacher_changed` (`old_teacher`, `new_teacher` = Vertretungslehrkraft) und `schulportal_hessen_homework_changed` (Text/Thema einer bekannten Hausaufgabe geändert; `old_text`, `new_text`). Nur für die eigene Klasse; Zuordnung nach Tag, Stunde, Fach und Art, bei mehrdeutigen Einträgen wird nichts gemeldet. Nicht beim ersten Laden und nicht für Änderungen, die während eines Neustarts passieren (SPHA-64, SPHA-65).
 * Neu: Diagnose-Sensor „Portal-Status“ (ok / Daten veraltet / keine Daten) mit letztem Erfolg/Fehler, Fehlerzähler und Alter der Daten. Keine Zugangsdaten oder Inhalte (SPHA-67).
 * Neu: Sensoren „Unterrichtsende“ (Zeitstempel) und „Tagesübersicht“ (Anzahl stattfindender Stunden; Attribute: erste/letzte Stunde, Beginn/Ende, entfallene Stunden, Vertretungen, Freistunden). Reine Berechnung aus Stundenplan und Vertretungen, Entfall eingerechnet. Freistunde = Lücke > 30 min zwischen zwei stattfindenden Stunden (Heuristik) (SPHA-59, SPHA-60, SPHA-61).

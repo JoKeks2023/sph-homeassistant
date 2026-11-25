@@ -31,6 +31,7 @@ from .timetable import (
     next_lesson_skipping_cancelled,
     next_school_start,
     relevant_day_summary,
+    week_summary,
 )
 
 SCAN_INTERVAL = timedelta(minutes=1)
@@ -145,6 +146,28 @@ def _portal_status_attrs(data: SphData) -> dict[str, Any]:
     }
 
 
+def _week(data: SphData):
+    return week_summary(
+        data.lessons, dt_util.now(), dt_util.DEFAULT_TIME_ZONE, data.my_substitutions()
+    )
+
+
+def _week_attrs(data: SphData) -> dict[str, Any]:
+    week = _week(data)
+    return {
+        "calendar_week": week.calendar_week,
+        "today_is_school_day": week.today_is_school_day,
+        "next_school_day": week.next_school_day.isoformat() if week.next_school_day else None,
+        "days_until_next_school_day": week.days_until_next,
+        "note": "school holidays are not taken into account",
+    }
+
+
+def _history_attrs(data: SphData) -> dict[str, Any]:
+    # Newest first; limited so the attributes stay small.
+    return {"entries": list(reversed(data.history))[:10]}
+
+
 SENSORS: tuple[SphSensorDescription, ...] = (
     SphSensorDescription(
         key="next_lesson",
@@ -170,6 +193,33 @@ SENSORS: tuple[SphSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.status(),
         attrs_fn=_portal_status_attrs,
+    ),
+    SphSensorDescription(
+        key="school_week",
+        fetch_key="timetable",
+        applet=APPLET_TIMETABLE,
+        value_fn=lambda data: _week(data).remaining_days,
+        attrs_fn=_week_attrs,
+        native_unit_of_measurement="days",
+    ),
+    SphSensorDescription(
+        key="data_quality",
+        fetch_key=None,
+        applet=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=["ok", "warning"],
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: "warning" if data.quality_issues() else "ok",
+        attrs_fn=lambda data: {"issues": data.quality_issues()},
+    ),
+    SphSensorDescription(
+        key="change_history",
+        fetch_key=None,
+        applet=None,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: len(data.history),
+        attrs_fn=_history_attrs,
+        native_unit_of_measurement="entries",
     ),
     SphSensorDescription(
         key="school_end",
