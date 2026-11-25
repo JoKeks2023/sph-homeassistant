@@ -72,6 +72,19 @@
           "stale": "Data outdated",
           "no_data": "No data"
         }
+      },
+      "school_week": {
+        "name": "School days this week"
+      },
+      "data_quality": {
+        "name": "Data quality",
+        "state": {
+          "ok": "OK",
+          "warning": "Issues found"
+        }
+      },
+      "change_history": {
+        "name": "Change history"
       }
     },
     "calendar": {

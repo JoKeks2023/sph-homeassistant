@@ -16,6 +16,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 from icalendar import Calendar
 
+from . import history as history_log
 from . import snapshot
 from .api import SphAuthError, SphClient, SphConnectionError, SphError
 from .cancellations import is_cancellation
@@ -66,6 +67,8 @@ class SphData:
     last_success: datetime | None = None
     last_failure: datetime | None = None
     consecutive_failures: int = 0
+    # Recent changes, oldest first (bounded, persisted separately).
+    history: list[dict] = field(default_factory=list)
 
     def status(self) -> str:
         """Return "ok", "stale" (old data served) or "no_data"."""
@@ -76,6 +79,26 @@ class SphData:
     def data_age(self, now: datetime) -> timedelta | None:
         """Age of the most recently fetched category, None if nothing was fetched."""
         return now - max(self.fetched.values()) if self.fetched else None
+
+    def quality_issues(self) -> list[str]:
+        """Return keys of data problems that are detectable without guessing."""
+        issues: list[str] = []
+        if self.stale:
+            issues.append("data_outdated")
+        for applet, key in (
+            (APPLET_SUBSTITUTIONS, "substitutions"),
+            (APPLET_TIMETABLE, "timetable"),
+            (APPLET_HOMEWORK, "homework"),
+            (APPLET_CALENDAR, "calendar"),
+        ):
+            if self.has_applet(applet) and not self.has_fetched(key):
+                issues.append(f"{key}_never_loaded")
+        if self.has_fetched("timetable"):
+            if not self.lessons:
+                issues.append("timetable_empty")
+            elif not self.own_class:
+                issues.append("own_class_unknown")
+        return issues
 
     def has_fetched(self, key: str) -> bool:
         """Return True if category ``key`` was loaded at least once.
@@ -111,6 +134,11 @@ def store_key(entry_id: str) -> str:
     return f"{DOMAIN}_{entry_id}"
 
 
+def history_store_key(entry_id: str) -> str:
+    """Storage key of the change history of one config entry."""
+    return f"{DOMAIN}_{entry_id}_history"
+
+
 class SphCoordinator(DataUpdateCoordinator[SphData]):
     """Fetch data with a separate time-to-live per category."""
 
@@ -131,6 +159,7 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
         self._first = True
         self._empty_timetables = 0
         self._store: Store[dict] = Store(hass, 1, store_key(entry.entry_id))
+        self._history_store: Store[dict] = Store(hass, 1, history_store_key(entry.entry_id))
 
     async def _async_setup(self) -> None:
         """Restore the last snapshot so a restart works while the portal is down.
@@ -138,6 +167,12 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
         Calendars are not restored (they are refetched); the fetch timestamps of
         the other categories are, so fresh data is not requested again.
         """
+        try:
+            stored = await self._history_store.async_load()
+            if stored:
+                self._data.history = history_log.sanitize(stored.get("entries"))
+        except Exception:  # noqa: BLE001 - corrupt storage must not block setup
+            _LOGGER.warning("Could not read stored history, starting empty")
         try:
             raw = await self._store.async_load()
         except Exception:  # noqa: BLE001 - corrupt storage must not block setup
@@ -187,6 +222,17 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
                 fetched={k: v for k, v in data.fetched.items() if k != "calendar"},
             ),
             30,
+        )
+
+    def _emit(self, event: str, payload: dict) -> None:
+        """Fire a bus event and remember it in the change history."""
+        self.hass.bus.async_fire(event, payload)
+        kind = event.removeprefix(f"{DOMAIN}_")
+        self._data.history = history_log.record(
+            self._data.history, kind, payload, dt_util.utcnow().isoformat()
+        )
+        self._history_store.async_delay_save(
+            lambda: {"entries": list(self._data.history)}, 30
         )
 
     def _due(self, key: str, ttl: timedelta) -> bool:
@@ -275,17 +321,17 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
         if not self._first:
             for item in data.homework:
                 if item.uid not in old_homework:
-                    self.hass.bus.async_fire(EVENT_NEW_HOMEWORK, item.as_dict())
+                    self._emit(EVENT_NEW_HOMEWORK, item.as_dict())
             for sub in data.my_substitutions():
                 if sub.uid not in old_subs:
-                    self.hass.bus.async_fire(EVENT_NEW_SUBSTITUTION, sub.as_dict())
+                    self._emit(EVENT_NEW_SUBSTITUTION, sub.as_dict())
                     if is_cancellation(sub):
-                        self.hass.bus.async_fire(EVENT_NEW_CANCELLATION, sub.as_dict())
+                        self._emit(EVENT_NEW_CANCELLATION, sub.as_dict())
             for kind, payload in substitution_changes(old_my_subs, data.my_substitutions()):
-                self.hass.bus.async_fire(
+                self._emit(
                     EVENT_ROOM_CHANGED if kind == "room" else EVENT_TEACHER_CHANGED, payload
                 )
             for payload in homework_changes(old_homework_items, data.homework):
-                self.hass.bus.async_fire(EVENT_HOMEWORK_CHANGED, payload)
+                self._emit(EVENT_HOMEWORK_CHANGED, payload)
         self._first = False
         return data

@@ -277,6 +277,15 @@ async def test_room_teacher_and_homework_change_events(
     assert [e.data["new_text"] for e in homework] == ["S. 10 und 11"]
     assert not new_hw  # an edit is not a new homework entry
 
+    history = hass.states.get(eid(hass, entry, "sensor", "change_history"))
+    assert history.state == "3"
+    assert {e["kind"] for e in history.attributes["entries"]} == {
+        "room_changed", "teacher_changed", "homework_changed"
+    }
+    quality = hass.states.get(eid(hass, entry, "sensor", "data_quality"))
+    assert quality.state == "ok"
+    assert hass.states.get(eid(hass, entry, "sensor", "school_week")) is not None
+
 
 async def test_next_lesson_skips_cancelled_and_school_start(
     hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal, freezer
@@ -413,3 +422,30 @@ async def test_new_entry_title_contains_username(hass: HomeAssistant) -> None:
             result["flow_id"], {"username": "anna.muster", "password": "x"}
         )
     assert result["title"] == "Testschule, Teststadt (anna.muster)"
+
+
+async def test_history_survives_restart(
+    hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal, hass_storage
+) -> None:
+    from custom_components.schulportal_hessen.coordinator import history_store_key
+
+    saved = [{"at": "2026-11-09T07:00:00+00:00", "kind": "room_changed",
+              "data": {"old_room": "R1", "new_room": "R2"}}]
+    hass_storage[history_store_key(entry.entry_id)] = {
+        "version": 1, "minor_version": 1, "key": history_store_key(entry.entry_id),
+        "data": {"entries": saved + ["junk"]},
+    }
+    await setup(hass, entry)
+    state = hass.states.get(eid(hass, entry, "sensor", "change_history"))
+    assert state.state == "1"
+    assert state.attributes["entries"][0]["data"]["new_room"] == "R2"
+
+
+async def test_data_quality_flags_empty_timetable(
+    hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal
+) -> None:
+    portal.lessons = []
+    await setup(hass, entry)
+    state = hass.states.get(eid(hass, entry, "sensor", "data_quality"))
+    assert state.state == "warning"
+    assert "timetable_empty" in state.attributes["issues"]

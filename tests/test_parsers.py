@@ -302,3 +302,31 @@ def test_change_detection():
     assert changes.homework_changes([hw], [hw]) == []
     assert changes.homework_changes([hw], [replace(hw, uid="u2", text="neu")]) == []
     assert changes.homework_changes([hw], [replace(hw, text="S. 11")])[0]["new_text"] == "S. 11"
+
+
+def test_week_summary():
+    plan = _gap_plan() + _plan()[2:]  # Monday + Wednesday
+    monday_morning = datetime(2026, 11, 9, 7, 0, tzinfo=TZ)
+    week = timetable.week_summary(plan, monday_morning, TZ)
+    assert (week.calendar_week, week.remaining_days) == (46, 2)
+    assert week.today_is_school_day and week.next_school_day == MONDAY
+    # after the last lesson of Monday only Wednesday remains
+    evening = datetime(2026, 11, 9, 20, 0, tzinfo=TZ)
+    week = timetable.week_summary(plan, evening, TZ)
+    assert (week.remaining_days, week.next_school_day) == (1, date(2026, 11, 11))
+    assert week.days_until_next == 2
+    # a fully cancelled Wednesday does not count
+    rows = [_sub(date(2026, 11, 11), "1", subject_old="E")]
+    assert timetable.week_summary(plan, evening, TZ, rows).remaining_days == 0
+
+
+def test_history_is_bounded_and_sanitised():
+    history = importlib.import_module("sph.history")
+    entries = []
+    for i in range(history.MAX_HISTORY + 5):
+        entries = history.record(entries, "room_changed", {"n": i, "t": "x" * 500}, "t")
+    assert len(entries) == history.MAX_HISTORY
+    assert entries[-1]["data"]["n"] == history.MAX_HISTORY + 4
+    assert len(entries[0]["data"]["t"]) <= history.MAX_TEXT
+    assert history.sanitize("junk") == []
+    assert history.sanitize([{"at": 1}, entries[0]]) == [entries[0]]

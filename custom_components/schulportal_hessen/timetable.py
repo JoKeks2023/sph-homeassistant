@@ -216,3 +216,46 @@ def relevant_day_summary(
         if summary.last[1] > now:
             return summary
     return None
+
+
+@dataclass(frozen=True)
+class WeekSummary:
+    """School days of the current week, derived from the timetable only."""
+
+    calendar_week: int
+    remaining_days: int
+    next_school_day: date | None
+    days_until_next: int | None
+    today_is_school_day: bool
+
+
+def week_summary(
+    lessons: list[Lesson], now: datetime, tz: tzinfo, rows: Iterable[Substitution] = ()
+) -> WeekSummary:
+    """Remaining school days this week (Mon-Fri) and the next school day.
+
+    Only the personal timetable and cancellations count. School holidays are
+    NOT known here, so during holidays the weekly plan is still assumed.
+    """
+    rows = list(rows)
+    today = now.astimezone(tz).date()
+    monday = today - timedelta(days=today.weekday())
+    remaining = 0
+    for offset in range(5):
+        day = monday + timedelta(days=offset)
+        if day < today:
+            continue
+        summary = day_summary(lessons, day, tz, rows)
+        if summary is None or summary.last is None:
+            continue
+        if day > today or summary.last[1] > now:
+            remaining += 1
+    nxt = relevant_day_summary(lessons, now, tz, rows)
+    today_summary = day_summary(lessons, today, tz, rows)
+    return WeekSummary(
+        calendar_week=today.isocalendar().week,
+        remaining_days=remaining,
+        next_school_day=nxt.day if nxt else None,
+        days_until_next=(nxt.day - today).days if nxt else None,
+        today_is_school_day=bool(today_summary and today_summary.last),
+    )
