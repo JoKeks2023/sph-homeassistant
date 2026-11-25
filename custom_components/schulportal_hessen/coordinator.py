@@ -19,6 +19,7 @@ from icalendar import Calendar
 from . import snapshot
 from .api import SphAuthError, SphClient, SphConnectionError, SphError
 from .cancellations import is_cancellation
+from .changes import homework_changes, substitution_changes
 from .const import (
     APPLET_CALENDAR,
     APPLET_HOMEWORK,
@@ -26,9 +27,12 @@ from .const import (
     APPLET_TIMETABLE,
     DOMAIN,
     EMPTY_TIMETABLE_THRESHOLD,
+    EVENT_HOMEWORK_CHANGED,
     EVENT_NEW_CANCELLATION,
     EVENT_NEW_HOMEWORK,
     EVENT_NEW_SUBSTITUTION,
+    EVENT_ROOM_CHANGED,
+    EVENT_TEACHER_CHANGED,
     ISSUE_TRACKER_URL,
     TTL_APPLETS,
     TTL_CALENDAR,
@@ -198,6 +202,8 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
         attempted = 0
         old_homework = {h.uid for h in data.homework}
         old_subs = {s.uid for s in data.substitutions}
+        old_homework_items = list(data.homework)
+        old_my_subs = list(data.my_substitutions())
 
         async def run(key: str, ttl: timedelta, coro_factory) -> None:
             nonlocal failures, attempted
@@ -275,5 +281,11 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
                     self.hass.bus.async_fire(EVENT_NEW_SUBSTITUTION, sub.as_dict())
                     if is_cancellation(sub):
                         self.hass.bus.async_fire(EVENT_NEW_CANCELLATION, sub.as_dict())
+            for kind, payload in substitution_changes(old_my_subs, data.my_substitutions()):
+                self.hass.bus.async_fire(
+                    EVENT_ROOM_CHANGED if kind == "room" else EVENT_TEACHER_CHANGED, payload
+                )
+            for payload in homework_changes(old_homework_items, data.homework):
+                self.hass.bus.async_fire(EVENT_HOMEWORK_CHANGED, payload)
         self._first = False
         return data

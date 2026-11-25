@@ -241,6 +241,43 @@ async def test_new_cancellation_event(
     assert sorted(e.data["lesson"] for e in substitutions) == ["2", "4"]
 
 
+async def test_room_teacher_and_homework_change_events(
+    hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal
+) -> None:
+    from dataclasses import replace
+
+    from pytest_homeassistant_custom_component.common import async_capture_events
+
+    from custom_components.schulportal_hessen.parsers import Homework
+
+    today = dt_util.now().date()
+    base = replace(make_sub(today, "1", kind="Vertretung"), room="R1", substitute="XYZ")
+    portal.substitutions = [base]
+    portal.applets = ["Vertretungsplan", "Stundenplan", "Mein Unterricht"]
+    portal.homework = [Homework("b-1", "Mathe", "Brüche", today, "S. 10")]
+    await setup(hass, entry)
+    rooms = async_capture_events(hass, "schulportal_hessen_room_changed")
+    teachers = async_capture_events(hass, "schulportal_hessen_teacher_changed")
+    homework = async_capture_events(hass, "schulportal_hessen_homework_changed")
+    new_hw = async_capture_events(hass, "schulportal_hessen_new_homework")
+    assert not (rooms or teachers or homework)
+
+    portal.substitutions = [replace(base, room="R2", substitute="UVW")]
+    portal.homework = [Homework("b-1", "Mathe", "Brüche", today, "S. 10 und 11")]
+    coordinator = entry.runtime_data
+    coordinator._data.fetched.pop("substitutions")
+    coordinator._data.fetched.pop("homework")
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    assert [(e.data["old_room"], e.data["new_room"]) for e in rooms] == [("R1", "R2")]
+    assert [(e.data["old_teacher"], e.data["new_teacher"]) for e in teachers] == [
+        ("XYZ", "UVW")
+    ]
+    assert [e.data["new_text"] for e in homework] == ["S. 10 und 11"]
+    assert not new_hw  # an edit is not a new homework entry
+
+
 async def test_next_lesson_skips_cancelled_and_school_start(
     hass: HomeAssistant, entry: MockConfigEntry, portal: FakePortal, freezer
 ) -> None:

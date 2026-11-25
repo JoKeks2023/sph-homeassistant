@@ -27,6 +27,9 @@ APPLET_HOMEWORK = "mein unterricht"
 EVENT_NEW_HOMEWORK = f"{DOMAIN}_new_homework"
 EVENT_NEW_SUBSTITUTION = f"{DOMAIN}_new_substitution"
 EVENT_NEW_CANCELLATION = f"{DOMAIN}_new_cancellation"
+EVENT_ROOM_CHANGED = f"{DOMAIN}_room_changed"
+EVENT_TEACHER_CHANGED = f"{DOMAIN}_teacher_changed"
+EVENT_HOMEWORK_CHANGED = f"{DOMAIN}_homework_changed"
 
 MAX_ATTRIBUTE_ITEMS = 25
 

@@ -53,6 +53,8 @@ Dashboard: mitgelieferte Karte `custom:schulportal-hessen-card` plus Markdown-Al
 | `schulportal_hessen_new_homework` | neue Hausaufgabe (`course`, `topic`, `text`, `lesson_date`) |
 | `schulportal_hessen_new_substitution` | neue Vertretung für deine Klasse (**auch** bei Entfall) |
 | `schulportal_hessen_new_cancellation` | neuer Entfall für deine Klasse (zusätzlich zu `new_substitution`; `date`, `lesson`, `subject_old`, `teacher`, `note`) |
+| `schulportal_hessen_room_changed` / `_teacher_changed` | Raum bzw. Vertretungslehrkraft eines bekannten Vertretungseintrags geändert (`old_room`/`new_room`, `old_teacher`/`new_teacher`) |
+| `schulportal_hessen_homework_changed` | Text oder Thema einer bekannten Hausaufgabe geändert (`old_text`, `new_text`) |
 
 Beim ersten Laden werden keine Events ausgelöst, nur bei späteren Neuigkeiten.
 
