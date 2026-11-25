@@ -27,6 +27,24 @@ entities:
 
 Einträge ohne Art und ohne Vertreter werden als **Entfall** markiert.
 
+### Karte 2.0: Wochenplan, Kompaktmodus, Filter
+
+```yaml
+type: custom:schulportal-hessen-card
+show_week: true          # Wochenplan Mo–Fr (am Wochenende die nächste Woche)
+days: [0, 1, 2]          # optional: nur Mo–Mi (0 = Montag)
+compact: false           # true: nur nächste Stunde, Unterrichtsbeginn, Entfall heute
+show_substitutions: true
+only_cancellations: false  # nur Entfall zeigen (blendet Andere Klassen/Hausaufgaben aus)
+account_select: true     # Auswahl-Liste, wenn mehrere Konten eingerichtet sind
+```
+
+* Entfall ist durchgestrichen, Vertretungen sind hervorgehoben, die aktuelle Stunde hat einen Rahmen.
+* Das Abzeichen **neu** erscheint bei Änderungen der letzten 24 Stunden (aus dem Sensor „Änderungshistorie“).
+* Ein Hinweis zeigt „Daten veraltet“ bzw. „Noch keine Daten geladen“ (`stale`/nicht verfügbar).
+* Der Wochenplan stammt aus dem Attribut `plan` des Sensors „Schultage diese Woche“.
+* Die Karte ist nur per Skript-Test geprüft (`tests/card/card.test.js`), nicht in einem echten Browser.
+
 ## Alternative: Markdown-Karten (ohne Custom Card)
 
 Die Beispiele nutzen die eingebaute **Markdown-Karte**. Ersetze die Entity-IDs

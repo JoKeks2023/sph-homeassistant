@@ -259,3 +259,48 @@ def week_summary(
         days_until_next=(nxt.day - today).days if nxt else None,
         today_is_school_day=bool(today_summary and today_summary.last),
     )
+
+
+def week_plan(
+    lessons: list[Lesson],
+    now: datetime,
+    tz: tzinfo,
+    rows: Iterable[Substitution] = (),
+) -> tuple[date, list[dict[str, str]]]:
+    """Lessons of the school week (Mon-Fri) with substitutions merged in.
+
+    On Saturday/Sunday the following week is returned. ``status`` is "normal",
+    "cancelled" or "changed" (a substitution row matches the lesson).
+    """
+    rows = list(rows)
+    today = now.astimezone(tz).date()
+    monday = today - timedelta(days=today.weekday())
+    if today.weekday() >= 5:
+        monday += timedelta(days=7)
+    plan: list[dict[str, str]] = []
+    for offset in range(5):
+        day = monday + timedelta(days=offset)
+        for lesson in sorted(
+            (item for item in lessons if item.weekday == day.weekday()),
+            key=lambda item: item.start,
+        ):
+            row = matching_substitution(lesson, day, rows)
+            status = "normal"
+            if row is not None:
+                status = "cancelled" if is_cancellation(row) else "changed"
+            entry = {
+                "date": day.isoformat(),
+                "period": lesson.period,
+                "start": lesson.start.strftime("%H:%M"),
+                "end": lesson.end.strftime("%H:%M"),
+                "subject": lesson.subject,
+                "teacher": lesson.teacher,
+                "room": lesson.room,
+                "status": status,
+            }
+            if row is not None and status == "changed":
+                entry["new_subject"] = row.subject
+                entry["new_teacher"] = row.substitute
+                entry["new_room"] = row.room
+            plan.append(entry)
+    return monday, plan

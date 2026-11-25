@@ -330,3 +330,23 @@ def test_history_is_bounded_and_sanitised():
     assert len(entries[0]["data"]["t"]) <= history.MAX_TEXT
     assert history.sanitize("junk") == []
     assert history.sanitize([{"at": 1}, entries[0]]) == [entries[0]]
+
+
+def test_week_plan_merges_status():
+    plan = _gap_plan() + _plan()[2:]
+    rows = [_sub(MONDAY, "1"), _sub(MONDAY, "2", subject_old="D", kind="Vertretung")]
+    rows[1] = parsers.Substitution(
+        day=MONDAY, lesson="2", classes=("10A",), substitute="XYZ", teacher="DEF",
+        kind="Vertretung", subject="D", subject_old="D", room="R9", note="",
+    )
+    monday, entries = timetable.week_plan(plan, datetime(2026, 11, 11, 9, 0, tzinfo=TZ), TZ, rows)
+    assert monday == MONDAY
+    assert [e["status"] for e in entries if e["date"] == "2026-11-09"] == [
+        "cancelled", "changed", "normal"
+    ]
+    changed = entries[1]
+    assert (changed["new_teacher"], changed["new_room"]) == ("XYZ", "R9")
+    assert any(e["date"] == "2026-11-11" for e in entries)
+    # on a weekend the next week is shown
+    saturday = datetime(2026, 11, 14, 9, 0, tzinfo=TZ)
+    assert timetable.week_plan(plan, saturday, TZ)[0] == date(2026, 11, 16)
