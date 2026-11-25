@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Karte 2.0 (SPHA-68): Wochenplan (`show_week`, `days`), Kompaktmodus (`compact`), Filter (`show_substitutions`, `only_cancellations`), Konto-Auswahl (`account_select`), Abzeichen „neu“ für Änderungen der letzten 24 h, Hinweis bei veralteten Daten. Bisherige Konfiguration funktioniert unverändert. Sensoren tragen zusätzlich das Attribut `account_name`.
 * Neu: Diagnose-Sensor „Änderungshistorie“ (letzte 50 Änderungen/Events mit Zeitstempel, bleibt nach Neustart erhalten, Texte gekürzt) (SPHA-66).
 * Neu: Sensor „Schultage diese Woche“ (verbleibende Schultage; Attribute: Kalenderwoche, nächster Schultag). Ferien werden **nicht** berücksichtigt (SPHA-62).
 * Neu: Diagnose-Sensor „Datenqualität“ (ok / Auffälligkeiten) mit Liste, z. B. `timetable_empty`, `own_class_unknown`, `*_never_loaded`, `data_outdated` (SPHA-69).

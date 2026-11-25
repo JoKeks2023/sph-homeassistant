@@ -31,6 +31,7 @@ from .timetable import (
     next_lesson_skipping_cancelled,
     next_school_start,
     relevant_day_summary,
+    week_plan,
     week_summary,
 )
 
@@ -154,12 +155,18 @@ def _week(data: SphData):
 
 def _week_attrs(data: SphData) -> dict[str, Any]:
     week = _week(data)
+    monday, plan = week_plan(
+        data.lessons, dt_util.now(), dt_util.DEFAULT_TIME_ZONE, data.my_substitutions()
+    )
     return {
         "calendar_week": week.calendar_week,
         "today_is_school_day": week.today_is_school_day,
         "next_school_day": week.next_school_day.isoformat() if week.next_school_day else None,
         "days_until_next_school_day": week.days_until_next,
         "note": "school holidays are not taken into account",
+        "plan_week_start": monday.isoformat(),
+        # Whole week for the Lovelace card (a few KB; no extra portal request).
+        "plan": plan,
     }
 
 
@@ -323,6 +330,7 @@ class SphSensor(SphEntity, SensorEntity):
             "sph": self.entity_description.key,
             # Opaque id of the config entry: lets the card tell accounts apart.
             "account": self.coordinator.config_entry.entry_id,
+            "account_name": self.coordinator.config_entry.title,
             "stale": self.coordinator.data.stale,
             **self.entity_description.attrs_fn(self.coordinator.data),
         }
