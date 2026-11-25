@@ -26,7 +26,11 @@ from .const import (
 from .coordinator import SphData
 from .entity import SphEntity
 from .subjects import full_subject
-from .timetable import next_lesson_skipping_cancelled, next_school_start
+from .timetable import (
+    next_lesson_skipping_cancelled,
+    next_school_start,
+    relevant_day_summary,
+)
 
 SCAN_INTERVAL = timedelta(minutes=1)
 
@@ -94,6 +98,42 @@ def _school_start_attrs(data: SphData) -> dict[str, Any]:
     }
 
 
+def _day(data: SphData):
+    return relevant_day_summary(
+        data.lessons, dt_util.now(), dt_util.DEFAULT_TIME_ZONE, data.my_substitutions()
+    )
+
+
+def _school_end(data: SphData):
+    summary = _day(data)
+    return summary.last[1] if summary and summary.last else None
+
+
+def _day_overview_value(data: SphData) -> int | None:
+    summary = _day(data)
+    return summary.total - summary.cancelled if summary else None
+
+
+def _day_overview_attrs(data: SphData) -> dict[str, Any]:
+    summary = _day(data)
+    if not summary:
+        return {}
+    return {
+        "date": summary.day.isoformat(),
+        "first_lesson": full_subject(summary.first[0].subject) if summary.first else None,
+        "last_lesson": full_subject(summary.last[0].subject) if summary.last else None,
+        "school_start": summary.first[1].isoformat() if summary.first else None,
+        "school_end": summary.last[1].isoformat() if summary.last else None,
+        "total_lessons": summary.total,
+        "cancelled_lessons": summary.cancelled,
+        "substitutions": summary.substitutions,
+        "free_periods": len(summary.free_periods),
+        "free_period_windows": [
+            {"start": a.isoformat(), "end": b.isoformat()} for a, b in summary.free_periods
+        ][:MAX_ATTRIBUTE_ITEMS],
+    }
+
+
 SENSORS: tuple[SphSensorDescription, ...] = (
     SphSensorDescription(
         key="next_lesson",
@@ -109,6 +149,22 @@ SENSORS: tuple[SphSensorDescription, ...] = (
         device_class=SensorDeviceClass.TIMESTAMP,
         value_fn=lambda data: (found[1] if (found := _school_start(data)) else None),
         attrs_fn=_school_start_attrs,
+    ),
+    SphSensorDescription(
+        key="school_end",
+        fetch_key="timetable",
+        applet=APPLET_TIMETABLE,
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=_school_end,
+        attrs_fn=lambda data: {},
+    ),
+    SphSensorDescription(
+        key="school_day_overview",
+        fetch_key="timetable",
+        applet=APPLET_TIMETABLE,
+        value_fn=_day_overview_value,
+        attrs_fn=_day_overview_attrs,
+        native_unit_of_measurement="lessons",
     ),
     SphSensorDescription(
         key="substitutions",

@@ -241,3 +241,42 @@ def test_matching_substitution_kinds():
     # a cancellation wins over a room change
     cancel = _sub(MONDAY, "1")
     assert ms(lesson, MONDAY, [room, cancel]) is cancel
+
+
+def _gap_plan():
+    mk = parsers.Lesson
+    return [
+        mk(0, "1", time(8, 0), time(8, 45), "M", "ABC", "R1", ""),
+        mk(0, "2", time(8, 50), time(9, 35), "D", "DEF", "R2", ""),
+        mk(0, "6", time(12, 0), time(12, 45), "E", "GHI", "R3", ""),
+    ]
+
+
+def test_day_summary_plain():
+    s = timetable.day_summary(_gap_plan(), MONDAY, TZ)
+    assert (s.total, s.cancelled, s.substitutions) == (3, 0, 0)
+    assert s.first[1] == datetime(2026, 11, 9, 8, 0, tzinfo=TZ)
+    assert s.last[1] == datetime(2026, 11, 9, 12, 45, tzinfo=TZ)
+    # 5 min break is no free period, 9:35-12:00 is
+    assert s.free_periods == ((datetime(2026, 11, 9, 9, 35, tzinfo=TZ),
+                               datetime(2026, 11, 9, 12, 0, tzinfo=TZ)),)
+
+
+def test_day_summary_cancellation_and_substitution():
+    rows = [_sub(MONDAY, "1"), _sub(MONDAY, "2", subject_old="D", kind="Vertretung")]
+    s = timetable.day_summary(_gap_plan(), MONDAY, TZ, rows)
+    assert (s.total, s.cancelled, s.substitutions) == (3, 1, 1)
+    assert s.first[0].period == "2"
+    # last lesson cancelled -> school ends earlier, gap disappears
+    s = timetable.day_summary(_gap_plan(), MONDAY, TZ, [_sub(MONDAY, "6", subject_old="E")])
+    assert s.last[1] == datetime(2026, 11, 9, 9, 35, tzinfo=TZ)
+    assert s.free_periods == ()
+
+
+def test_day_summary_no_school_and_relevant_day():
+    assert timetable.day_summary(_gap_plan(), date(2026, 11, 10), TZ) is None
+    after = datetime(2026, 11, 9, 13, 0, tzinfo=TZ)
+    plan = _gap_plan() + _plan()[2:]  # Wednesday lesson
+    assert timetable.relevant_day_summary(plan, after, TZ).day == date(2026, 11, 11)
+    morning = datetime(2026, 11, 9, 7, 0, tzinfo=TZ)
+    assert timetable.relevant_day_summary(plan, morning, TZ).day == MONDAY
