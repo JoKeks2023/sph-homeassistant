@@ -6,19 +6,18 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 import recurring_ical_events
-
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
 from . import SphConfigEntry
+from .cancellations import is_cancellation
 from .const import APPLET_CALENDAR, APPLET_TIMETABLE
 from .coordinator import SphCoordinator
 from .entity import SphEntity
 from .subjects import full_subject
 from .timetable import lessons_between, matching_substitution, next_lesson
-from .cancellations import is_cancellation
 
 
 async def async_setup_entry(

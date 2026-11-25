@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-import logging
 from typing import TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry
@@ -16,7 +16,9 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 from icalendar import Calendar
 
+from . import snapshot
 from .api import SphAuthError, SphClient, SphConnectionError, SphError
+from .cancellations import is_cancellation
 from .const import (
     APPLET_CALENDAR,
     APPLET_HOMEWORK,
@@ -35,8 +37,6 @@ from .const import (
     TTL_TIMETABLE,
     UPDATE_INTERVAL,
 )
-from . import snapshot
-from .cancellations import is_cancellation
 from .parsers import Homework, Lesson, Substitution
 
 if TYPE_CHECKING:

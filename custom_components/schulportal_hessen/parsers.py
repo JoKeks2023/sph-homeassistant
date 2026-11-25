@@ -7,9 +7,9 @@ and may change at any time, so every parser fails soft (returns what it can).
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import date, time
-import re
 
 from bs4 import BeautifulSoup, Tag
 
