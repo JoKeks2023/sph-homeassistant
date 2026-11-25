@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 – 2026-11-25
+
+Neu: Tagesübersicht und Unterrichtsende, Änderungs-Events und -Historie, Diagnose-Sensoren, Karte 2.0. Alles wird aus den bereits geladenen Daten berechnet, es gibt keine zusätzlichen Portal-Abrufe. Keine Änderungen an bestehenden Entitäten und Events. Nicht enthalten: Ferien-Erkennung (der Schulkalender wurde nicht auf echte Ferien-Einträge geprüft).
 
 * Karte 2.0 (SPHA-68): Wochenplan (`show_week`, `days`), Kompaktmodus (`compact`), Filter (`show_substitutions`, `only_cancellations`), Konto-Auswahl (`account_select`), Abzeichen „neu“ für Änderungen der letzten 24 h, Hinweis bei veralteten Daten. Bisherige Konfiguration funktioniert unverändert. Sensoren tragen zusätzlich das Attribut `account_name`.
 * Neu: Diagnose-Sensor „Änderungshistorie“ (letzte 50 Änderungen/Events mit Zeitstempel, bleibt nach Neustart erhalten, Texte gekürzt) (SPHA-66).
