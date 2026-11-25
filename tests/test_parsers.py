@@ -280,3 +280,25 @@ def test_day_summary_no_school_and_relevant_day():
     assert timetable.relevant_day_summary(plan, after, TZ).day == date(2026, 11, 11)
     morning = datetime(2026, 11, 9, 7, 0, tzinfo=TZ)
     assert timetable.relevant_day_summary(plan, morning, TZ).day == MONDAY
+
+
+def test_change_detection():
+    from dataclasses import replace
+
+    changes = importlib.import_module("sph.changes")
+    base = replace(_sub(MONDAY, "1", kind="Vertretung"), room="R1", substitute="XYZ")
+    assert changes.substitution_changes([base], [base]) == []
+    got = changes.substitution_changes([base], [replace(base, room="R2")])
+    assert got == [("room", {"date": "2026-11-09", "lesson": "1", "subject": "M",
+                             "old_room": "R1", "new_room": "R2"})]
+    got = changes.substitution_changes([base], [replace(base, substitute="UVW")])
+    assert [k for k, _ in got] == ["teacher"]
+    # ambiguous pairing (same key twice) and unknown entries never report a change
+    twin = replace(base, room="R9")
+    assert changes.substitution_changes([base, twin], [replace(base, room="R2"), twin]) == []
+    assert changes.substitution_changes([], [base]) == []
+
+    hw = parsers.Homework("u1", "Mathe", "Brüche", MONDAY, "S. 10")
+    assert changes.homework_changes([hw], [hw]) == []
+    assert changes.homework_changes([hw], [replace(hw, uid="u2", text="neu")]) == []
+    assert changes.homework_changes([hw], [replace(hw, text="S. 11")])[0]["new_text"] == "S. 11"
