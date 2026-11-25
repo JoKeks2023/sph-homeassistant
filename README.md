@@ -10,7 +10,7 @@
 [![Validate](https://github.com/JoKeks2023/sph-homeassistant/actions/workflows/validate.yml/badge.svg)](https://github.com/JoKeks2023/sph-homeassistant/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/JoKeks2023/sph-homeassistant?include_prereleases)](https://github.com/JoKeks2023/sph-homeassistant/releases)
-![Status](https://img.shields.io/badge/status-early%20(v0.1)-yellow)
+![Status](https://img.shields.io/badge/status-early%20(v0.3)-yellow)
 ![Read-only](https://img.shields.io/badge/access-read--only-green)
 
 🇩🇪 Deutsch · [🇬🇧 English](#-english)
@@ -31,10 +31,11 @@ Server, Container oder Cloud-Dienst. Alles läuft direkt in Home Assistant.
 
 | | Bereich | Entität | Details |
 |---|---|---|---|
-| 🗓️ | **Stundenplan** | Kalender „Stundenplan“ · Sensoren „Nächste Stunde“ und „Unterrichtsbeginn“ | Wochenplan **mit eingerechneten Vertretungen** deiner Klasse (Kalender: „Entfall: Mathematik“, „Vertretung: …“, neue Raum/Lehrkraft in der Beschreibung); die Sensoren überspringen entfallene Stunden. Eine Stunde wird nur verändert, wenn Stundennummer **und** Fach zum Eintrag passen; bei Doppelstunden zählt die erste Stunde. |
+| 🗓️ | **Stundenplan** | Kalender „Stundenplan“ · Sensoren „Nächste Stunde“, „Unterrichtsbeginn“, „Unterrichtsende“, „Tagesübersicht“ (inkl. Freistunden) und „Schultage diese Woche“ | Wochenplan **mit eingerechneten Vertretungen** deiner Klasse (Kalender: „Entfall: Mathematik“, „Vertretung: …“, neue Raum/Lehrkraft in der Beschreibung); die Sensoren überspringen entfallene Stunden. Eine Stunde wird nur verändert, wenn Stundennummer **und** Fach zum Eintrag passen; bei Doppelstunden zählt die erste Stunde. |
 | 🔄 | **Vertretungsplan** | Sensoren „Vertretungen“ (deine Klasse) und „Vertretungen andere Klassen“ | Anzahl + Liste (Attribute), Klasse automatisch erkannt. |
 | ❌ | **Entfall** | Binary-Sensoren „Entfall heute“, „Entfall in den ersten Stunden“, „Entfall morgen“ | Nur für deine Klasse. „Erste Stunden“ = Stunde 1 bis N, N einstellbar unter *Konfigurieren* (Standard 2). |
 | 📚 | **Hausaufgaben** | Sensor „Hausaufgaben“ | Aktuelle Hausaufgabe je Kurs. Das Datum (`lesson_date`) ist das der **Stunde**, kein Abgabetermin – das Portal liefert keinen. |
+| 🩺 | **Diagnose** | Sensoren „Portal-Status“, „Datenqualität“, „Änderungshistorie“ | Zustand der Verbindung, auffällige Daten, die letzten 50 Änderungen (bleiben nach Neustart erhalten). |
 | 🏫 | **Schulkalender** | Kalender „Schulkalender“ | Aus dem iCal-Export des Portals. |
 
 Voraussetzung: **Home Assistant 2024.11 oder neuer**.
@@ -82,6 +83,7 @@ automation:
   Testaccount des Autors nicht freigeschaltet und ließen sich daher nicht prüfen.
   Es wird nichts simuliert. Hilfe mit einem Account, bei dem diese Module aktiv sind,
   ist willkommen ([Issue eröffnen](https://github.com/JoKeks2023/sph-homeassistant/issues)).
+- **Ferien-Erkennung** – nicht umgesetzt, solange nicht belegt ist, dass der Schulkalender Ferien eindeutig kennzeichnet. „Schultage diese Woche“ ignoriert Ferien.
 - **Fälligkeitsdatum bei Hausaufgaben** – das Portal liefert nur das Datum der Stunde
   (`lesson_date`), keinen Abgabetermin.
 - **Anwesenheitsdaten** werden bewusst nicht ausgelesen.
@@ -124,7 +126,7 @@ automatisch danach (Reauthentifizierung).
 
 ## 🧪 Status
 
-Frühe Version (0.1). Client und Parser wurden gegen das echte Portal geprüft; die
+Frühe Version (0.3). Client und Parser wurden gegen das echte Portal geprüft; die
 Integration läuft in einem Home-Assistant-Setup (Einrichtung, Sensoren, Karte). Der
 Fehlerpfad „falsches Passwort“ ist nicht getestet, und mit nur einem Account ist die
 Abdeckung unterschiedlicher Schulen gering.
