@@ -101,6 +101,22 @@ async def test_total_failure_keeps_last_data(
     state = hass.states.get(sensor)
     assert state.state == "1"
     assert state.attributes["stale"] is True
+    status = hass.states.get(eid(hass, entry, "sensor", "portal_status"))
+    assert status.state == "stale"
+    assert status.attributes["consecutive_failures"] == 1
+    assert status.attributes["last_failure"] is not None
+    assert status.attributes["last_success"] is not None
+    assert status.attributes["data_age_minutes"] >= 2 * 24 * 60
+    # recovery resets the failure counter
+    portal.fail_all = False
+    coordinator._data.fetched = {
+        k: v - timedelta(days=2) for k, v in coordinator._data.fetched.items()
+    }
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+    status = hass.states.get(eid(hass, entry, "sensor", "portal_status"))
+    assert status.state == "ok"
+    assert status.attributes["consecutive_failures"] == 0
 
 
 async def test_failure_before_any_data_retries_setup(

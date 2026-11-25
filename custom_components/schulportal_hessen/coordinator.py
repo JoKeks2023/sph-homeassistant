@@ -58,6 +58,20 @@ class SphData:
     fetched: dict[str, datetime] = field(default_factory=dict)
     # True while the portal could not be reached and old data is being served.
     stale: bool = False
+    # Technical status (never contains credentials or response content).
+    last_success: datetime | None = None
+    last_failure: datetime | None = None
+    consecutive_failures: int = 0
+
+    def status(self) -> str:
+        """Return "ok", "stale" (old data served) or "no_data"."""
+        if self.stale:
+            return "stale"
+        return "ok" if self.fetched else "no_data"
+
+    def data_age(self, now: datetime) -> timedelta | None:
+        """Age of the most recently fetched category, None if nothing was fetched."""
+        return now - max(self.fetched.values()) if self.fetched else None
 
     def has_fetched(self, key: str) -> bool:
         """Return True if category ``key`` was loaded at least once.
@@ -239,6 +253,8 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
             raise UpdateFailed("Schulportal Hessen not reachable") from err
 
         if attempted and failures == attempted:
+            data.last_failure = dt_util.utcnow()
+            data.consecutive_failures += 1
             if not data.fetched:
                 raise UpdateFailed("Schulportal Hessen could not be read")
             # Keep serving the last known data instead of going unavailable.
@@ -246,6 +262,8 @@ class SphCoordinator(DataUpdateCoordinator[SphData]):
             return data
         data.stale = False
         if attempted:
+            data.last_success = dt_util.utcnow()
+            data.consecutive_failures = 0
             self._save()
 
         if not self._first:
