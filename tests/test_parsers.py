@@ -1,10 +1,10 @@
 """Tests for the portal HTML parsers (synthetic fixtures)."""
 
-from datetime import date, datetime, time, timedelta, timezone
 import importlib
-from pathlib import Path
 import sys
 import types
+from datetime import UTC, date, datetime, time, timedelta, timezone
+from pathlib import Path
 
 # Load the pure modules through a stub package so that the integration's
 # __init__.py (which needs Home Assistant) is not imported.
@@ -92,7 +92,7 @@ def test_snapshot_roundtrip():
     subs = parse_substitutions(read("vertretungsplan.html"))
     own_class, lessons = parse_timetable(read("stundenplan.html"))
     homework = parse_homework(read("meinunterricht.html"))
-    fetched = {"substitutions": datetime(2026, 11, 10, 8, 0, tzinfo=timezone.utc)}
+    fetched = {"substitutions": datetime(2026, 11, 10, 8, 0, tzinfo=UTC)}
     raw = snapshot.dump(
         applets=["Vertretungsplan"], own_class=own_class, substitutions=subs,
         lessons=lessons, homework=homework, fetched=fetched,

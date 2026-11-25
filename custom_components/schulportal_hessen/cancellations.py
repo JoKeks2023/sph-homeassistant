@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
 from datetime import date
-import re
 
 from .const import CANCELLATION_KINDS
 from .parsers import Substitution
