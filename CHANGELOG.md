@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Neu: Diagnose-Sensor „Portal-Status“ (ok / Daten veraltet / keine Daten) mit letztem Erfolg/Fehler, Fehlerzähler und Alter der Daten. Keine Zugangsdaten oder Inhalte (SPHA-67).
 * Neu: Sensoren „Unterrichtsende“ (Zeitstempel) und „Tagesübersicht“ (Anzahl stattfindender Stunden; Attribute: erste/letzte Stunde, Beginn/Ende, entfallene Stunden, Vertretungen, Freistunden). Reine Berechnung aus Stundenplan und Vertretungen, Entfall eingerechnet. Freistunde = Lücke > 30 min zwischen zwei stattfindenden Stunden (Heuristik) (SPHA-59, SPHA-60, SPHA-61).
 
 ## 0.2.0 – 2026-11-24

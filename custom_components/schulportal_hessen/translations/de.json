@@ -64,6 +64,14 @@
       },
       "school_day_overview": {
         "name": "Tagesübersicht"
+      },
+      "portal_status": {
+        "name": "Portal-Status",
+        "state": {
+          "ok": "OK",
+          "stale": "Daten veraltet",
+          "no_data": "Keine Daten"
+        }
       }
     },
     "calendar": {

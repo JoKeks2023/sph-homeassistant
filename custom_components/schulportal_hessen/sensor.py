@@ -12,6 +12,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
 )
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
@@ -39,8 +40,8 @@ SCAN_INTERVAL = timedelta(minutes=1)
 class SphSensorDescription(SensorEntityDescription):
     """Sensor description with the portal module it depends on."""
 
-    applet: str
-    fetch_key: str
+    applet: str | None
+    fetch_key: str | None
     value_fn: Callable[[SphData], Any]
     attrs_fn: Callable[[SphData], dict[str, Any]]
 
@@ -134,6 +135,16 @@ def _day_overview_attrs(data: SphData) -> dict[str, Any]:
     }
 
 
+def _portal_status_attrs(data: SphData) -> dict[str, Any]:
+    age = data.data_age(dt_util.utcnow())
+    return {
+        "last_success": data.last_success.isoformat() if data.last_success else None,
+        "last_failure": data.last_failure.isoformat() if data.last_failure else None,
+        "consecutive_failures": data.consecutive_failures,
+        "data_age_minutes": int(age.total_seconds() // 60) if age is not None else None,
+    }
+
+
 SENSORS: tuple[SphSensorDescription, ...] = (
     SphSensorDescription(
         key="next_lesson",
@@ -149,6 +160,16 @@ SENSORS: tuple[SphSensorDescription, ...] = (
         device_class=SensorDeviceClass.TIMESTAMP,
         value_fn=lambda data: (found[1] if (found := _school_start(data)) else None),
         attrs_fn=_school_start_attrs,
+    ),
+    SphSensorDescription(
+        key="portal_status",
+        fetch_key=None,
+        applet=None,
+        device_class=SensorDeviceClass.ENUM,
+        options=["ok", "stale", "no_data"],
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: data.status(),
+        attrs_fn=_portal_status_attrs,
     ),
     SphSensorDescription(
         key="school_end",
@@ -211,7 +232,7 @@ async def async_setup_entry(
     async_add_entities(
         SphSensor(coordinator, description)
         for description in SENSORS
-        if coordinator.data.has_applet(description.applet)
+        if description.applet is None or coordinator.data.has_applet(description.applet)
     )
 
 
@@ -234,9 +255,8 @@ class SphSensor(SphEntity, SensorEntity):
     @property
     def available(self) -> bool:
         """Unavailable until the category was loaded once (not "0 entries")."""
-        return super().available and self.coordinator.data.has_fetched(
-            self.entity_description.fetch_key
-        )
+        key = self.entity_description.fetch_key
+        return super().available and (key is None or self.coordinator.data.has_fetched(key))
 
     @property
     def native_value(self) -> Any:
